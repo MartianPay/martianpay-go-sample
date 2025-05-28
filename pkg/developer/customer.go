@@ -10,7 +10,7 @@ const (
 
 type CustomerParams struct {
 	Name        *string           `json:"name"`
-	Email       *string           `json:"email" binding:"required,email"`
+	Email       *string           `json:"email"`
 	Description *string           `json:"description"`
 	Metadata    map[string]string `json:"metadata"`
 	Phone       *string           `json:"phone"`

@@ -9,10 +9,17 @@ This is a sample Go application that demonstrates how to use the MartianPay API.
 还有每个用例中的email和ID
 
 ```sh
+go test -count=1 -v -run TestCreateAndUpdatePaymentIntent sdk/*.go
 go test -count=1 -v -run TestListPaymentIntents sdk/*.go
 go test -count=1 -v -run TestGetPaymentIntent sdk/*.go
+
+go test -count=1 -v -run TestCreateAndUpdateCustomer sdk/*.go
 go test -count=1 -v -run TestListCustomers sdk/*.go
 go test -count=1 -v -run TestGetCustomer sdk/*.go
+
+go test -count=1 -v -run TestCreateRefund sdk/*.go
+go test -count=1 -v -run TestGetRefund sdk/*.go
+go test -count=1 -v -run TestListRefunds sdk/*.go
 ```
 
 ## Webhook event receiver test

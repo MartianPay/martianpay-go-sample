@@ -6,6 +6,43 @@ import (
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 )
 
+type CustomerCreateRequest struct {
+	developer.CustomerParams
+}
+
+type CustomerCreateResp struct {
+	developer.Customer
+}
+
+// CreateCustomer creates a new customer
+func (c *Client) CreateCustomer(req CustomerCreateRequest) (*CustomerCreateResp, error) {
+	var response CustomerCreateResp
+	err := c.sendRequest("POST", "/v1/customers", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type CustomerUpdateRequest struct {
+	ID string
+	developer.CustomerParams
+}
+
+type CustomerUpdateResp struct {
+	developer.Customer
+}
+
+// UpdateCustomer updates an existing customer
+func (c *Client) UpdateCustomer(req CustomerUpdateRequest) (*CustomerUpdateResp, error) {
+	var response CustomerUpdateResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/customers/%s", req.ID), req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 type CustomerGetRequest struct {
 	ID string
 }

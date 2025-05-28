@@ -6,6 +6,43 @@ import (
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 )
 
+type PaymentIntentCreateRequest struct {
+	developer.PaymentIntentParams
+}
+
+type PaymentIntentCreateResp struct {
+	developer.PaymentIntent
+}
+
+func (c *Client) CreatePaymentIntent(req PaymentIntentCreateRequest) (*PaymentIntentCreateResp, error) {
+	var response PaymentIntentCreateResp
+	err := c.sendRequest("POST", "/v1/payment_intents", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type PaymentIntentUpdateRequest struct {
+	ID                string
+	PaymentLinkId     *string                         `json:"payment_link_id"`
+	PaymentMethodType *developer.PaymentMethodType    `json:"payment_method_type"` // crypto, visa, mastercard, apple pay, google pay, etc.
+	PaymentMethodData *developer.PaymentMethodOptions `json:"payment_method_options"`
+}
+
+type PaymentIntentUpdateResp struct {
+	developer.PaymentIntent
+}
+
+func (c *Client) UpdatePaymentIntent(req PaymentIntentUpdateRequest) (*PaymentIntentUpdateResp, error) {
+	var response PaymentIntentUpdateResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s", req.ID), req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 type PaymentIntentGetReq struct {
 	ID string
 }
