@@ -4,9 +4,8 @@ This is a sample Go application that demonstrates how to use the MartianPay API.
 
 
 ## Test
-
-测试前修改const apiKey = "your_api_key_here"
-还有每个用例中的email和ID
+Before testing, modify const apiKey = "your_api_key_here"
+Also update the email and ID in each test case
 
 ```sh
 go test -count=1 -v -run TestCreateAndUpdatePaymentIntent sdk/*.go
@@ -24,11 +23,11 @@ go test -count=1 -v -run TestListRefunds sdk/*.go
 
 ## Webhook event receiver test
 
-首先运行main.go，
+First, run main.go:
 ```sh
 go run main.go
 ```
-然后用下面的curl发送event测试
+Then use the following curl command to send a test event:
 ```sh
 curl --location 'http://localhost:8080/v1/webhook_test' \
 --header 'Content-Type: application/json' \
