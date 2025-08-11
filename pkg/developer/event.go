@@ -32,6 +32,22 @@ const (
 	EventTypePayoutSucceeded EventType = "payout.succeeded"
 	EventTypePayoutUpdated   EventType = "payout.updated"
 	EventTypePayoutFailed    EventType = "payout.failed"
+
+	// Payroll events
+	EventTypePayrollCreated   EventType = "payroll.created"
+	EventTypePayrollApproved  EventType = "payroll.approved"
+	EventTypePayrollRejected  EventType = "payroll.rejected"
+	EventTypePayrollCanceled  EventType = "payroll.canceled"
+	EventTypePayrollExecuting EventType = "payroll.executing"
+	EventTypePayrollCompleted EventType = "payroll.completed"
+	EventTypePayrollFailed    EventType = "payroll.failed"
+
+	// Payroll item events
+	EventTypePayrollItemProcessing          EventType = "payroll_item.processing"
+	EventTypePayrollItemSucceeded           EventType = "payroll_item.succeeded"
+	EventTypePayrollItemFailed              EventType = "payroll_item.failed"
+	EventTypePayrollItemAddressVerification EventType = "payroll_item.address_verification_sent"
+	EventTypePayrollItemAddressVerified     EventType = "payroll_item.address_verified"
 )
 
 const (

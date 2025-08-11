@@ -2,10 +2,11 @@ package developer
 
 import "github.com/shopspring/decimal"
 
+// AssetAmount represents a cryptocurrency asset with its amount and decimal precision
 type AssetAmount struct {
-	AssetId       string          `json:"asset_id"`
-	Amount        decimal.Decimal `json:"amount"`
-	DecimalDigits int             `json:"-"`
+	AssetId       string          `json:"asset_id"` // Unique identifier for the asset/currency
+	Amount        decimal.Decimal `json:"amount"`   // Decimal amount of the asset
+	DecimalDigits int             `json:"-"`        // Number of decimal places for this asset (not serialized to JSON)
 }
 
 func NewAssetAmount(amount decimal.Decimal, assetId string, decimals int) *AssetAmount {
@@ -17,7 +18,7 @@ func NewAssetAmount(amount decimal.Decimal, assetId string, decimals int) *Asset
 }
 
 func NewAssetAmountFromBigInt(intAmount decimal.Decimal, assetId string, decimals int) *AssetAmount {
-	amount := intAmount.Div(decimal.New(1, int32(decimals)))
+	amount := intAmount.Shift(int32(-decimals))
 	return &AssetAmount{
 		AssetId:       assetId,
 		Amount:        amount,
@@ -25,7 +26,7 @@ func NewAssetAmountFromBigInt(intAmount decimal.Decimal, assetId string, decimal
 	}
 }
 func (a *AssetAmount) BigInt() decimal.Decimal {
-	return a.Amount.Mul(decimal.New(1, int32(a.DecimalDigits)))
+	return a.Amount.Shift(int32(a.DecimalDigits))
 }
 
 func (a *AssetAmount) Value() decimal.Decimal {

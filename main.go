@@ -88,6 +88,41 @@ func webhookHandler(c *gin.Context) {
 		logrus.WithFields(logrus.Fields{
 			"payout": payout,
 		}).Info("Webhook received: Payout")
+	} else if strings.HasPrefix(string(event.Type), "payroll_item") {
+		// Handle payroll_item events (must check before payroll to avoid prefix conflict)
+		payrollItem := developer.PayrollItems{}
+		err = json.Unmarshal(event.Data.Raw, &payrollItem)
+		if err != nil {
+			logrus.WithError(err).Warn("Error unmarshalling event data")
+			c.JSON(500, gin.H{
+				"code": 500,
+				"msg":  "Error unmarshalling event data",
+			})
+			return
+		}
+		logrus.WithFields(logrus.Fields{
+			"payroll_item_id": payrollItem.ID,
+			"payroll_id":      payrollItem.PayrollID,
+			"status":          payrollItem.Status,
+			"amount":          payrollItem.Amount,
+		}).Info("Webhook received: Payroll item")
+	} else if strings.HasPrefix(string(event.Type), "payroll") {
+		payroll := developer.Payroll{}
+		err = json.Unmarshal(event.Data.Raw, &payroll)
+		if err != nil {
+			logrus.WithError(err).Warn("Error unmarshalling event data")
+			c.JSON(500, gin.H{
+				"code": 500,
+				"msg":  "Error unmarshalling event data",
+			})
+			return
+		}
+		logrus.WithFields(logrus.Fields{
+			"payroll_id":   payroll.ID,
+			"status":       payroll.Status,
+			"total_amount": payroll.TotalAmount,
+			"item_count":   payroll.TotalItemNum,
+		}).Info("Webhook received: Payroll")
 	}
 
 	c.JSON(200, gin.H{

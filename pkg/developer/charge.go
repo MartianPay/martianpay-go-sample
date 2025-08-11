@@ -120,7 +120,7 @@ type Charge struct {
 	Created                       int64               `json:"created"`
 	Customer                      string              `json:"customer"`
 	Description                   string              `json:"description"`
-	Disputed                      bool                `json:"disputed"` // false, 是否有争议
+	Disputed                      bool                `json:"disputed"`
 	FailureCode                   string              `json:"failure_code"`
 	FailureMessage                string              `json:"failure_message"`
 	FraudDetails                  *ChargeFraudDetails `json:"fraud_details"`
@@ -134,7 +134,7 @@ type Charge struct {
 
 	PaymentMethodType    PaymentMethodType     `json:"payment_method_type"`
 	PaymentMethodOptions *PaymentMethodOptions `json:"payment_method_options"`
-	Transactions         []*TransactionDetails `json:"transactions"` // 区块链交易列表
+	Transactions         []*TransactionDetails `json:"transactions"` // blockchain transactions
 
 	ReceiptEmail string `json:"receipt_email"`
 	ReceiptURL   string `json:"receipt_url"` // This is the URL to view the receipt for this charge. The receipt is kept up-to-date to the latest state of the charge, including any refunds. If the charge is for an Invoice, the receipt will be stylized as an Invoice receipt.
@@ -143,4 +143,14 @@ type Charge struct {
 
 	Refunds []*Refund `json:"refunds"` // list of refund ids
 	Review  *Review   `json:"review"`  // Review associated with this charge if one exists.
+
+	PayerMaxPayload *PayerMaxPayload `json:"payer_max_payload"`
+	PaymentProvider string           `json:"payment_provider"`
+}
+
+type PayerMaxPayload struct {
+	CashierURL string `json:"cashier_url"`
+	Status     string `json:"status"`
+	SessionKey string `json:"session_key"`
+	ClientKey  string `json:"client_key"`
 }
