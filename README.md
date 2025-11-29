@@ -24,7 +24,7 @@ go get github.com/MartianPay/martianpay-go-sample
 
 ## Test
 
-Before testing, modify `const apiKey = "your_api_key_here"` in `sdk/api_test.go`
+Before testing, modify `const apiKey = "your_api_key_here"` in `sdk/common_test.go`
 Also update the email and ID in each test case as needed.
 
 ### Payment Intent Tests
