@@ -47,6 +47,10 @@ type PayrollValidation struct {
 	BalanceEnough bool `json:"balance_enough"` // Whether there's enough balance to complete the payment
 }
 
+func (p *PayrollValidation) IsWalletInfoValid() bool {
+	return p.AmountValid && p.CoinValid && p.NetworkValid && p.AddressValid
+}
+
 type PayrollDifferenceField struct {
 	Previous string `json:"previous"` // Previous value before changes
 	Current  string `json:"current"`  // Current value after changes
@@ -70,6 +74,7 @@ type PayrollDifference struct {
 }
 
 type PayrollItemParams struct {
+	ExternalID    string `json:"external_id"`
 	Name          string `json:"name"`
 	Email         string `json:"email"`
 	Phone         string `json:"phone"`
@@ -85,6 +90,7 @@ type PayrollItems struct {
 	UpdatedAt         int64                 `json:"updated_at"`            // Timestamp when the item was last updated
 	PayrollID         string                `json:"payroll_id"`            // ID of the parent payroll
 	Payroll           *Payroll              `json:"payroll"`               // Reference to the parent payroll
+	ExternalID        string                `json:"external_id"`           // External ID for idempotency
 	Name              string                `json:"name"`                  // Recipient name
 	Email             string                `json:"email"`                 // Recipient email address
 	Phone             string                `json:"phone"`                 // Recipient phone number
@@ -105,6 +111,8 @@ type PayrollItems struct {
 	IsBinance         bool                  `json:"is_binance"`            // Whether this is a binance payroll item
 	BinanceTag        string                `json:"binance_tag"`           // Binance tag for the item
 	BinanceTaskID     string                `json:"binance_task_id"`       // Binance task ID for the item
+	AmlInfo           string                `json:"aml_info"`              // AML info for the item
+	TxId              string                `json:"tx_id"`                 // Transaction ID (Binance order ID or blockchain tx hash)
 }
 
 type PayrollSwapItems struct {
@@ -187,6 +195,9 @@ const (
 
 	BinanceWithdrawIdPrefix = "binance_withdraw_"
 	BinanceWithdrawIdLength = 24
+
+	BinanceTradeIdPrefix = "binance_trade_"
+	BinanceTradeIdLength = 24
 )
 
 // GenerateBinanceTaskId generates a unique Binance task ID
@@ -205,4 +216,10 @@ func GenerateBinanceDepositId() string {
 func GenerateBinanceWithdrawId() string {
 	uniqueString := uniuri.NewLen(BinanceWithdrawIdLength)
 	return BinanceWithdrawIdPrefix + uniqueString
+}
+
+// GenerateBinanceTradeId generates a unique Binance trade ID
+func GenerateBinanceTradeId() string {
+	uniqueString := uniuri.NewLen(BinanceTradeIdLength)
+	return BinanceTradeIdPrefix + uniqueString
 }

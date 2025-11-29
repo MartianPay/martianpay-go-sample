@@ -35,3 +35,22 @@ type BankAccount struct {
 	SwiftCode         string `json:"swift_code"`
 	AccountNumber     string `json:"account_number"`
 }
+
+type BalanceDetail struct {
+	Currency         string `json:"currency"`          // Currency code (Asset ID, e.g., "USDT-Tron", "USDC-Ethereum")
+	AvailableBalance string `json:"available_balance"` // Available balance
+	PendingBalance   string `json:"pending_balance"`   // Pending balance
+	LockedBalance    string `json:"locked_balance"`    // Locked balance
+	FrozenBalance    string `json:"frozen_balance"`    // Frozen balance
+	TotalBalance     string `json:"total_balance"`     // Total balance
+}
+
+type MerchantBalance struct {
+	Currency         string           `json:"currency"`          // Currency code
+	AvailableBalance string           `json:"available_balance"` // Available balance
+	PendingBalance   string           `json:"pending_balance"`   // Pending balance
+	LockedBalance    string           `json:"locked_balance"`    // Locked balance
+	FrozenBalance    string           `json:"frozen_balance"`    // Frozen balance
+	TotalBalance     string           `json:"total_balance"`     // Total balance
+	BalanceDetails   []*BalanceDetail `json:"balance_details"`   // List of balance details
+}

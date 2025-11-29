@@ -61,7 +61,7 @@ type RefundListResp struct {
 // ListRefunds retrieves a list of refunds based on the provided parameters
 func (c *Client) ListRefunds(req RefundListRequest) (*RefundListResp, error) {
 	var response RefundListResp
-	err := c.sendRequest("POST", "/v1/refunds/list", req, &response)
+	err := c.sendRequestWithQuery("GET", "/v1/refunds", req, &response)
 	if err != nil {
 		return nil, err
 	}

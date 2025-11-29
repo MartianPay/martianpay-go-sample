@@ -144,7 +144,8 @@ type Charge struct {
 	Refunds []*Refund `json:"refunds"` // list of refund ids
 	Review  *Review   `json:"review"`  // Review associated with this charge if one exists.
 
-	PayerMaxPayload *PayerMaxPayload `json:"payer_max_payload"`
+	PayerMaxPayload *PayerMaxPayload `json:"payer_max_payload,omitempty"`
+	StripePayload   *StripePayload   `json:"stripe_payload,omitempty"`
 	PaymentProvider string           `json:"payment_provider"`
 }
 
@@ -153,4 +154,11 @@ type PayerMaxPayload struct {
 	Status     string `json:"status"`
 	SessionKey string `json:"session_key"`
 	ClientKey  string `json:"client_key"`
+}
+
+type StripePayload struct {
+	ClientSecret string  `json:"client_secret"`
+	PublicKey    string  `json:"public_key"`
+	Status       string  `json:"status"`
+	CustomerID   *string `json:"customer_id,omitempty"`
 }

@@ -13,20 +13,69 @@ const (
 	PaymentIntentStatusPaid          PaymentIntentStatus = "Paid"           // At least one blockchain tx with status Submitted/Completed/Confirmed, with sufficient total amount
 	PaymentIntentStatusCompleted     PaymentIntentStatus = "Completed"      // At least one blockchain tx with status Completed/Confirmed, with sufficient total amount
 	PaymentIntentStatusConfirmed     PaymentIntentStatus = "Confirmed"      // At least one blockchain tx with status Confirmed, with sufficient total amount
+	PaymentIntentStatusFrozen        PaymentIntentStatus = "Frozen"         // Payment received but funds frozen due to AML rejection
+	PaymentIntentStatusUnfrozen      PaymentIntentStatus = "Unfrozen"       // Previously frozen funds have been successfully unfrozen
 	PaymentIntentStatusCancelled     PaymentIntentStatus = "Cancelled"      // Cancelled due to timeout: 20min for Created, 60min for Partially Paid/Paid, 120min for Completed
 )
 
+type ProductOptionSwatch struct {
+	Type    string `json:"type"`               // "color" or "image"
+	Value   string `json:"value,omitempty"`    // Hex color or display value
+	MediaID string `json:"media_id,omitempty"` // Reference to media asset when type=image
+}
+
+type ProductOptionValue struct {
+	Value     string               `json:"value"`                // Option value label
+	SortOrder int                  `json:"sort_order,omitempty"` // Optional order for display
+	Swatch    *ProductOptionSwatch `json:"swatch,omitempty"`     // Optional swatch metadata
+	Metadata  map[string]string    `json:"metadata,omitempty"`   // Additional metadata
+}
+
+type ProductOption struct {
+	Name      string                `json:"name"`                 // Option name, e.g. "Color"
+	SortOrder int                   `json:"sort_order,omitempty"` // Optional order for display
+	Values    []*ProductOptionValue `json:"values"`               // Allowed values for this option
+	Metadata  map[string]string     `json:"metadata,omitempty"`   // Optional metadata
+}
+
+type ProductVariant struct {
+	ID                  string                       `json:"id"`                               // Unique identifier for the variant
+	OptionValues        map[string]string            `json:"option_values"`                    // Selected option value per option name
+	Price               *AssetAmount                 `json:"price,omitempty"`                  // Variant price
+	MediaOrder          []string                     `json:"media_order,omitempty"`            // Ordered media asset IDs for the variant
+	InventoryQuantity   *int                         `json:"inventory_quantity,omitempty"`     // Optional inventory quantity
+	Active              bool                         `json:"active"`                           // Variant is active/available
+	Version             int64                        `json:"version"`                          // Catalog version that produced this variant
+	SellingPlanGroupIDs []string                     `json:"selling_plan_group_ids,omitempty"` // Variant-level selling plan group associations
+	SellingPlanGroups   []*SellingPlanGroupWithPlans `json:"selling_plan_groups,omitempty"`    // Expanded selling plan groups with plans (only populated when variant has override)
+	SellingPlanPricing  []*SellingPlanPricing        `json:"selling_plan_pricing,omitempty"`   // Pre-calculated subscription pricing per selling plan
+}
+
+type SellingPlanGroupWithPlans struct{} // Placeholder for subscription feature
+type SellingPlanPricing struct{}        // Placeholder for subscription feature
+
 type Product struct {
-	ID          string            `json:"id"`          // Unique identifier for the product
-	Name        string            `json:"name"`        // Name of the product
-	Price       *AssetAmount      `json:"price"`       // Price of the product including currency information
-	Description string            `json:"description"` // Detailed description of the product
-	PictureURL  string            `json:"picture_url"` // URL to the product image
-	TaxCode     string            `json:"tax_code"`    // Tax classification code for the product
-	Metadata    map[string]string `json:"metadata"`    // Additional custom data for the product
-	Active      bool              `json:"active"`      // Indicates if the product is currently available
-	UpdatedAt   int64             `json:"updated_at"`  // Last update timestamp in Unix format
-	CreatedAt   int64             `json:"created_at"`  // Creation timestamp in Unix format
+	ID                     string                       `json:"id"`                               // Unique identifier for the product
+	Name                   string                       `json:"name"`                             // Name of the product
+	Price                  *AssetAmount                 `json:"price,omitempty"`                  // Legacy price field for simple products
+	FixedPrice             *AssetAmount                 `json:"fixed_price,omitempty"`            // Explicit price for simple products
+	Description            string                       `json:"description"`                      // Detailed description of the product
+	TaxCode                string                       `json:"tax_code"`                         // Tax classification code for the product
+	Metadata               map[string]string            `json:"metadata"`                         // Additional custom data for the product
+	DefaultCurrency        string                       `json:"default_currency"`                 // Base currency for the product/variants
+	MediaOrder             []string                     `json:"media_order,omitempty"`            // Ordered media asset IDs at product level
+	CollectShippingAddress bool                         `json:"collect_shipping_address"`         // Collect shipping address during checkout
+	CollectTaxAddress      bool                         `json:"collect_tax_address"`              // Collect billing/tax address during checkout
+	RequiresSellingPlan    bool                         `json:"requires_selling_plan"`            // true=subscription only, false=one-time or subscription
+	Options                []*ProductOption             `json:"options,omitempty"`                // Variant option definitions
+	Variants               []*ProductVariant            `json:"variants,omitempty"`               // Variant combinations
+	Active                 bool                         `json:"active"`                           // Indicates if the product is currently available
+	UpdatedAt              int64                        `json:"updated_at"`                       // Last update timestamp in Unix format
+	CreatedAt              int64                        `json:"created_at"`                       // Creation timestamp in Unix format
+	Version                int64                        `json:"version"`                          // Catalog version associated with this product
+	Includes               *PaymentLinkIncludes         `json:"includes,omitempty"`               // Included media assets with signed URLs
+	SellingPlanGroupIDs    []string                     `json:"selling_plan_group_ids,omitempty"` // Product-level selling plan group associations
+	SellingPlanGroups      []*SellingPlanGroupWithPlans `json:"selling_plan_groups,omitempty"`    // Expanded selling plan groups with plans (use expand=selling_plans query param)
 }
 
 type ProductItem struct {
@@ -34,19 +83,53 @@ type ProductItem struct {
 	Quantity int      `json:"quantity"` // Number of product items
 }
 
+type PaymentLinkVariant struct {
+	VariantID   string          `json:"variant_id"`             // Identifier of the product variant
+	Variant     *ProductVariant `json:"variant,omitempty"`      // Variant details returned for convenience
+	Quantity    int             `json:"quantity"`               // Default quantity for this variant
+	MinQuantity *int            `json:"min_quantity,omitempty"` // Optional minimum quantity for add-ons
+	MaxQuantity *int            `json:"max_quantity,omitempty"` // Optional maximum quantity for add-ons
+	IsPrimary   bool            `json:"is_primary"`             // Indicates if this variant is part of the primary selection
+}
+
+type PaymentLinkPriceRange struct {
+	Min *AssetAmount `json:"min"` // Minimum price across primary variants
+	Max *AssetAmount `json:"max"` // Maximum price across primary variants
+}
+
+type PaymentLinkMedia struct {
+	ID          string `json:"id"`                     // Media identifier
+	URL         string `json:"url"`                    // CDN URL for the asset
+	Width       int    `json:"width,omitempty"`        // Width in pixels
+	Height      int    `json:"height,omitempty"`       // Height in pixels
+	AltText     string `json:"alt_text,omitempty"`     // Alternative text for accessibility
+	ContentType string `json:"content_type,omitempty"` // MIME type of the asset
+}
+
+type PaymentLinkIncludes struct {
+	Media []*PaymentLinkMedia `json:"media,omitempty"` // Media assets referenced by the product/variants
+}
+
 type PaymentLink struct {
-	ID           string         `json:"id"`            // Unique identifier for the payment link
-	ProductItems []*ProductItem `json:"product_items"` // List of products included in this payment link
-	TotalPrice   *AssetAmount   `json:"total_price"`   // Total price for all products in the payment link
-	Active       bool           `json:"active"`        // Indicates if the payment link is currently active
-	UpdatedAt    int64          `json:"updated_at"`    // Last update timestamp in Unix format
-	CreatedAt    int64          `json:"created_at"`    // Creation timestamp in Unix format
-	URL          *string        `json:"url"`           // URL to access the payment link
+	ID              string                 `json:"id"`                         // Unique identifier for the payment link
+	ProductItems    []*ProductItem         `json:"product_items,omitempty"`    // Legacy flattened product list
+	Product         *Product               `json:"product,omitempty"`          // Product associated with the payment link
+	PrimaryVariants []*PaymentLinkVariant  `json:"primary_variants,omitempty"` // Primary variants selectable by the buyer
+	AddonVariants   []*PaymentLinkVariant  `json:"addon_variants,omitempty"`   // Optional add-on variants
+	VariantConfig   map[string]any         `json:"variant_config,omitempty"`   // UI and default selection metadata
+	PriceRange      *PaymentLinkPriceRange `json:"price_range,omitempty"`      // Price range across primary variants
+	TotalPrice      *AssetAmount           `json:"total_price,omitempty"`      // Computed total price (legacy behaviour)
+	Active          bool                   `json:"active"`                     // Indicates if the payment link is currently active
+	UpdatedAt       int64                  `json:"updated_at"`                 // Last update timestamp in Unix format
+	CreatedAt       int64                  `json:"created_at"`                 // Creation timestamp in Unix format
+	URL             *string                `json:"url"`                        // URL to access the payment link
+	Includes        *PaymentLinkIncludes   `json:"includes,omitempty"`         // Included shared resources (e.g., media)
 }
 
 type PaymentLinkDetails struct {
 	MerchantID   string       `json:"merchant_id"`   // ID of the merchant who created the payment link
 	MerchantName string       `json:"merchant_name"` // Name of the merchant
+	PublicKey    string       `json:"public_key"`    // Public API key for this merchant
 	PaymentLink  *PaymentLink `json:"payment_link"`  // Details of the payment link
 }
 
@@ -88,11 +171,13 @@ type PaymentMethodOptions struct {
 
 type PaymentMethodConfirmOptions struct {
 	Crypto *CryptoOption `json:"crypto"` // Simplified crypto options used for payment method confirmation, containing only the asset ID
-	Fiat   *FiatOption   `json:"fiat""`  // Simplified fiat options used for payment method confirmation, containing only the asset ID
+	Fiat   *FiatOption   `json:"fiat"`   // Simplified fiat options used for payment method confirmation, containing only the asset ID
 }
 
 type FiatOption struct {
-	Currency *string `json:"currency" binding:"required"` // Currency code for the fiat
+	Currency          *string `json:"currency" binding:"required"`   // Currency code for the fiat
+	PaymentMethodID   *string `json:"payment_method_id,omitempty"`   // Saved payment method ID for Stripe (used with cards payment type)
+	SavePaymentMethod *bool   `json:"save_payment_method,omitempty"` // Whether to save the payment method for future use (Stripe only)
 }
 
 type CryptoOption struct {
@@ -118,15 +203,16 @@ type Crypto struct {
 }
 
 type PaymentIntentParams struct {
-	Amount          string            `json:"amount" binding:"required" example:"1.0"`                      // Amount to be charged in the specified currency
-	Currency        string            `json:"currency" binding:"required" example:"USD"`                    // ISO 4217 currency code
-	Customer        *string           `json:"customer"`                                                     // Identifier of the customer this payment intent belongs to
-	Description     *string           `json:"description"`                                                  // An arbitrary string attached to the object. Often useful for displaying to users.
-	Metadata        map[string]string `json:"metadata"`                                                     // Set of key-value pairs that you can attach to the object
-	MerchantOrderId string            `json:"merchant_order_id" binding:"required" example:"sn-1234567890"` // Unique identifier for the order on the merchant's side
-	ReceiptEmail    string            `json:"receipt_email" binding:"omitempty,email"`                      // Email address to send the receipt to
-	ReturnURL       *string           `json:"return_url"`                                                   // URL to redirect the customer to after payment
-	OneTimePayment  *bool             `json:"one_time_payment" swaggerignore:"true"`                        // Whether this payment can only be used once
+	Amount                 string            `json:"amount" binding:"required" example:"1.0"`                      // Amount to be charged in the specified currency
+	Currency               string            `json:"currency" binding:"required" example:"USD"`                    // ISO 4217 currency code
+	Customer               *string           `json:"customer"`                                                     // Identifier of the customer this payment intent belongs to
+	Description            *string           `json:"description"`                                                  // An arbitrary string attached to the object. Often useful for displaying to users.
+	Metadata               map[string]string `json:"metadata"`                                                     // Set of key-value pairs that you can attach to the object
+	MerchantOrderId        string            `json:"merchant_order_id" binding:"required" example:"sn-1234567890"` // Unique identifier for the order on the merchant's side
+	ReceiptEmail           string            `json:"receipt_email" binding:"omitempty,email"`                      // Email address to send the receipt to
+	ReturnURL              *string           `json:"return_url"`                                                   // URL to redirect the customer to after payment
+	PaymentMethodID        *string           `json:"payment_method_id"`                                            // ID of a saved payment method to use for this payment (Stripe only)
+	CompleteOnFirstPayment *bool             `json:"complete_on_first_payment" swaggerignore:"true"`               // Complete payment immediately when first transaction arrives, regardless of amount
 }
 
 type PaymentDetails struct {
@@ -139,6 +225,22 @@ type PaymentDetails struct {
 	NetAmount      *AssetAmount            `json:"net_amount"`      // Net amount after deducting all fees
 	GasFee         map[string]*AssetAmount `json:"gas_fee"`         // Gas fees for blockchain transactions by asset type
 	NetworkFee     *AssetAmount            `json:"network_fee"`     // Network fee for processing the transaction
+}
+
+// UnfreezeWithdraw represents an unfreeze withdrawal of previously frozen funds
+type UnfreezeWithdraw struct {
+	ID                 string       `json:"id"`                    // Unique identifier for the withdraw
+	PayoutID           string       `json:"payout_id"`             // Associated payout ID
+	AssetID            string       `json:"asset_id"`              // Asset ID of the withdrawn funds
+	Amount             *AssetAmount `json:"amount"`                // Amount being withdrawn
+	NetworkFee         *AssetAmount `json:"network_fee"`           // Network fee for the withdrawal
+	Status             string       `json:"status"`                // Status of the withdrawal
+	Address            string       `json:"address"`               // Destination address for withdrawal
+	Type               string       `json:"type"`                  // Type of withdraw (unfreeze_reverse or unfreeze_release)
+	Description        string       `json:"description"`           // Description from the associated payout
+	OriginalFrozenTxID string       `json:"original_frozen_tx_id"` // Original AML-rejected transaction ID
+	CreatedAt          int64        `json:"created_at"`            // Created timestamp
+	UpdatedAt          int64        `json:"updated_at"`            // Last updated timestamp
 }
 
 type PaymentIntent struct {
@@ -163,10 +265,17 @@ type PaymentIntent struct {
 	Status                  string                 `json:"status"`                     // Current status of the payment intent
 	ProcessingStatus        string                 `json:"-"`                          // Internal processing status of the payment intent
 	PaymentIntentStatus     PaymentIntentStatus    `json:"payment_intent_status"`      // Standardized status of the payment intent
-	OneTimePayment          bool                   `json:"one_time_payment"`           // Indicates if this is a one-time payment
+	CompleteOnFirstPayment  bool                   `json:"complete_on_first_payment"`  // Complete payment immediately when first transaction arrives, regardless of amount
 	PermanentDeposit        bool                   `json:"permanent_deposit"`          // Indicates if this payment is a permanent deposit
 	PermanentDepositAssetId string                 `json:"permanent_deposit_asset_id"` // Asset ID for the permanent deposit
 	ExpiredAt               uint64                 `json:"expired_at"`                 // Expired time
+	UnfreezeWithdraws       []*UnfreezeWithdraw    `json:"unfreeze_withdraws"`         // List of unfreeze withdrawals for previously frozen funds
+
+	// Association fields (populated on demand via expand parameters)
+	Invoice             *string     `json:"invoice,omitempty"`              // Invoice ID if this payment is for an invoice (subscriptions)
+	InvoiceDetails      interface{} `json:"invoice_details,omitempty"`      // Expanded invoice details (use expand=invoice)
+	Subscription        *string     `json:"subscription,omitempty"`         // Subscription ID (resolved through invoice)
+	SubscriptionDetails interface{} `json:"subscription_details,omitempty"` // Expanded subscription details (use expand=invoice.subscription)
 }
 
 type PaymentIntentCancellationReason string

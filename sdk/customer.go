@@ -81,7 +81,44 @@ type CustomerListResp struct {
 // ListCustomers retrieves a list of customers based on the provided parameters
 func (c *Client) ListCustomers(req CustomerListRequest) (*CustomerListResp, error) {
 	var response CustomerListResp
-	err := c.sendRequest("POST", "/v1/customers/list", req, &response)
+	err := c.sendRequestWithQuery("GET", "/v1/customers", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type CustomerDeleteRequest struct {
+	ID string
+}
+
+type CustomerDeleteResp struct {
+	Deleted bool   `json:"deleted"` // Indicates if the customer was successfully deleted
+	ID      string `json:"id"`      // ID of the deleted customer
+}
+
+// DeleteCustomer deletes a customer by ID
+func (c *Client) DeleteCustomer(req CustomerDeleteRequest) (*CustomerDeleteResp, error) {
+	var response CustomerDeleteResp
+	err := c.sendRequest("DELETE", fmt.Sprintf("/v1/customers/%s", req.ID), nil, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type CustomerPaymentMethodListRequest struct {
+	CustomerID string `json:"customer_id" form:"customer_id" binding:"required"` // Customer ID to list payment methods for
+}
+
+type CustomerPaymentMethodListResponse struct {
+	PaymentMethods []*developer.PaymentMethodCard `json:"payment_methods"` // List of saved payment methods
+}
+
+// ListCustomerPaymentMethods retrieves a list of saved payment methods for a customer
+func (c *Client) ListCustomerPaymentMethods(req CustomerPaymentMethodListRequest) (*CustomerPaymentMethodListResponse, error) {
+	var response CustomerPaymentMethodListResponse
+	err := c.sendRequestWithQuery("GET", "/v1/customers/payment_methods", req, &response)
 	if err != nil {
 		return nil, err
 	}

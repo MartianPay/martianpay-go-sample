@@ -25,9 +25,9 @@ func (c *Client) CreatePaymentIntent(req PaymentIntentCreateRequest) (*PaymentIn
 
 type PaymentIntentUpdateRequest struct {
 	ID                string
-	PaymentLinkId     *string                         `json:"payment_link_id"`
-	PaymentMethodType *developer.PaymentMethodType    `json:"payment_method_type"` // crypto, visa, mastercard, apple pay, google pay, etc.
-	PaymentMethodData *developer.PaymentMethodOptions `json:"payment_method_options"`
+	PaymentLinkId     *string                                `json:"payment_link_id"`
+	PaymentMethodType *developer.PaymentMethodType           `json:"payment_method_type"` // crypto, visa, mastercard, apple pay, google pay, etc.
+	PaymentMethodData *developer.PaymentMethodConfirmOptions `json:"payment_method_options"`
 }
 
 type PaymentIntentUpdateResp struct {
@@ -67,8 +67,10 @@ type PaymentIntentListReq struct {
 	PageSize int32 `json:"page_size" binding:"required,min=1"` // Items per page
 
 	// Filters
-	Customer      *string `json:"customer,omitempty"`       // Filter by customer
-	CustomerEmail *string `json:"customer_email,omitempty"` // Filter by customer email
+	Customer                *string `json:"customer,omitempty"`                   // Filter by customer
+	CustomerEmail           *string `json:"customer_email,omitempty"`             // Filter by customer email
+	PermanentDeposit        *bool   `json:"permanent_deposit,omitempty"`          // Filter by permanent deposit status
+	PermanentDepositAssetId *string `json:"permanent_deposit_asset_id,omitempty"` // Filter by permanent deposit asset ID
 }
 
 type PaymentIntentListResp struct {
@@ -81,7 +83,27 @@ type PaymentIntentListResp struct {
 // ListPaymentIntents retrieves a list of payment intents based on the provided parameters
 func (c *Client) ListPaymentIntents(req PaymentIntentListReq) (*PaymentIntentListResp, error) {
 	var response PaymentIntentListResp
-	err := c.sendRequest("POST", "/v1/payment_intents/list", req, &response)
+	err := c.sendRequestWithQuery("GET", "/v1/payment_intents", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+type PaymentIntentCancelReq struct {
+	ID     string  `json:"-"`                // Payment Intent ID (sent in URL)
+	Reason *string `json:"reason,omitempty"` // Optional cancellation reason
+}
+
+type PaymentIntentCancelResp struct {
+	developer.PaymentIntent
+}
+
+// CancelPaymentIntent cancels a payment intent
+// Only payment intents with status "RequiresPaymentMethod" or those that have exceeded their payment timeout can be canceled
+func (c *Client) CancelPaymentIntent(req PaymentIntentCancelReq) (*PaymentIntentCancelResp, error) {
+	var response PaymentIntentCancelResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s/cancel", req.ID), req, &response)
 	if err != nil {
 		return nil, err
 	}
