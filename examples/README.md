@@ -152,6 +152,126 @@ Direct backend-to-backend integration (shown in examples):
 
 **Examples in this directory show the API-only approach** to demonstrate all API calls. In production, we recommend using MartianPay.js Widget for easier integration.
 
+#### Stripe Card Payment Frontend Integration
+
+When using the API-only approach for card payments, you'll receive a Stripe payload from the `UpdatePaymentIntent` response. Here's how to integrate it on your frontend:
+
+**Step 1: Backend - Create and update payment intent** (see examples 6 & 7)
+```go
+// Backend receives Stripe payload from UpdatePaymentIntent response
+response := updateResp.PaymentMethodOptions.Fiat.StripePayload
+```
+
+**Step 2: Frontend - Include Stripe.js**
+```html
+<!-- Add Stripe.js to your page -->
+<script src="https://js.stripe.com/v3/"></script>
+```
+
+**Step 3: Frontend - Initialize Stripe and confirm payment**
+```javascript
+// Initialize Stripe with the public key from backend response
+const stripe = Stripe(stripePublicKey);  // From response.public_key
+
+// For new card payment
+if (response.stripe_payload.client_secret) {
+  // Confirm the card payment
+  const { error, paymentIntent } = await stripe.confirmCardPayment(
+    response.stripe_payload.client_secret,
+    {
+      payment_method: {
+        card: cardElement,  // Your Stripe card element
+        billing_details: {
+          name: customerName,
+          email: customerEmail
+        }
+      }
+    }
+  );
+
+  if (error) {
+    console.error('Payment failed:', error.message);
+  } else if (paymentIntent.status === 'succeeded') {
+    console.log('Payment successful!');
+    // Redirect to success page or show confirmation
+  }
+}
+
+// For saved card payment
+if (response.stripe_payload.payment_method_id) {
+  // Confirm payment with saved card
+  const { error, paymentIntent } = await stripe.confirmCardPayment(
+    response.stripe_payload.client_secret,
+    {
+      payment_method: response.stripe_payload.payment_method_id
+    }
+  );
+
+  if (error) {
+    console.error('Payment failed:', error.message);
+  } else if (paymentIntent.status === 'succeeded') {
+    console.log('Payment successful!');
+  }
+}
+```
+
+**Complete Frontend Example:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <form id="payment-form">
+    <div id="card-element"></div>
+    <button type="submit">Pay</button>
+  </form>
+
+  <script>
+    // Get payment data from your backend
+    const paymentData = {
+      publicKey: 'pk_test_xxx',  // From UpdatePaymentIntent response
+      clientSecret: 'pi_xxx_secret_xxx',  // From stripe_payload
+    };
+
+    // Initialize Stripe
+    const stripe = Stripe(paymentData.publicKey);
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    // Handle form submission
+    document.getElementById('payment-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        paymentData.clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: 'Customer Name',
+              email: 'customer@example.com'
+            }
+          }
+        }
+      );
+
+      if (error) {
+        alert('Payment failed: ' + error.message);
+      } else if (paymentIntent.status === 'succeeded') {
+        alert('Payment successful!');
+        // Handle success - redirect or update UI
+      }
+    });
+  </script>
+</body>
+</html>
+```
+
+📖 **Stripe Documentation**: https://stripe.com/docs/js/payment_intents/confirm_card_payment
+
 ## Webhook Testing
 
 Example 28 starts a webhook event receiver server. Here's how to test it:

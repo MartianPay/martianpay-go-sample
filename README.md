@@ -26,33 +26,7 @@ go get github.com/MartianPay/martianpay-go-sample
 
 ## Integration Approaches
 
-MartianPay offers two ways to integrate payments:
-
-### Option 1: MartianPay.js Widget (Recommended) ⭐
-
-The easiest way to accept payments - perfect for most use cases:
-
-- **Simple integration**: Just pass `payment_intent.client_secret` to the widget
-- **Automatic handling**: Widget handles payment method selection (crypto or cards)
-- **No backend complexity**: Widget calls UpdatePaymentIntent API for you
-- **Built-in UI**: Professional payment interface included
-
-```javascript
-// Frontend integration
-const widget = MartianPay.create(payment_intent.client_secret);
-widget.mount('#payment-container');
-```
-
-📖 **Documentation**: https://docs.martianpay.com/v1/docs/martianpay-js-usage
-
-### Option 2: API-Only Integration (Advanced)
-
-Direct backend-to-backend integration for advanced use cases:
-
-- Full control over payment flow
-- Custom UI implementation
-- Requires calling UpdatePaymentIntent from your backend
-- See [Test Cases](#test) below for detailed examples
+MartianPay offers flexible integration options to suit different use cases. For detailed integration guides including frontend code examples, see the [examples directory](examples/README.md).
 
 ## Interactive Examples
 
