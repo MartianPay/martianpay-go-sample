@@ -1,6 +1,8 @@
-# MartianPay Go SDK Sample
+# MartianPay Go SDK
 
-This is a sample Go application that demonstrates how to use the MartianPay API.
+Official Go SDK for the MartianPay payment platform.
+
+> **🚀 Quick Start**: Check out the [Interactive Examples](#interactive-examples) to get started quickly!
 
 ## Features
 
@@ -22,131 +24,139 @@ This is a sample Go application that demonstrates how to use the MartianPay API.
 go get github.com/MartianPay/martianpay-go-sample
 ```
 
-## Test
+## Integration Approaches
 
-Before testing, modify `const apiKey = "your_api_key_here"` in `sdk/common_test.go`
-Also update the email and ID in each test case as needed.
+MartianPay offers two ways to integrate payments:
 
-### Payment Intent Tests
+### Option 1: MartianPay.js Widget (Recommended) ⭐
 
-```sh
-# Create and update payment intent (crypto)
-go test -count=1 -v -run TestCreateAndUpdatePaymentIntent sdk/*.go
+The easiest way to accept payments - perfect for most use cases:
 
-# List payment intents
-go test -count=1 -v -run TestListPaymentIntents sdk/*.go
+- **Simple integration**: Just pass `payment_intent.client_secret` to the widget
+- **Automatic handling**: Widget handles payment method selection (crypto or cards)
+- **No backend complexity**: Widget calls UpdatePaymentIntent API for you
+- **Built-in UI**: Professional payment interface included
 
-# Get specific payment intent
-go test -count=1 -v -run TestGetPaymentIntent sdk/*.go
-
-# Cancel payment intent
-go test -count=1 -v -run TestCancelPaymentIntent sdk/*.go
-
-# List payment intents with permanent deposit filter
-go test -count=1 -v -run TestListPaymentIntentsWithPermanentDeposit sdk/*.go
+```javascript
+// Frontend integration
+const widget = MartianPay.create(payment_intent.client_secret);
+widget.mount('#payment-container');
 ```
 
-### Customer Tests
+📖 **Documentation**: https://docs.martianpay.com/v1/docs/martianpay-js-usage
 
-```sh
-# Create and update customer
-go test -count=1 -v -run TestCreateAndUpdateCustomer sdk/*.go
+### Option 2: API-Only Integration (Advanced)
 
-# List customers
-go test -count=1 -v -run TestListCustomers sdk/*.go
+Direct backend-to-backend integration for advanced use cases:
 
-# Get specific customer
-go test -count=1 -v -run TestGetCustomer sdk/*.go
+- Full control over payment flow
+- Custom UI implementation
+- Requires calling UpdatePaymentIntent from your backend
+- See [Test Cases](#test) below for detailed examples
 
-# Delete customer
-go test -count=1 -v -run TestDeleteCustomer sdk/*.go
+## Interactive Examples
+
+The fastest way to learn the SDK! We provide 28 ready-to-run examples covering all features:
+
+```bash
+cd examples
+make update   # Update to latest SDK version
+make run      # Run interactive examples menu
 ```
 
-### Payment Method Tests
+The examples demonstrate the **API-only integration approach** to show all SDK methods. For production, we recommend using the **MartianPay.js Widget** for simpler integration.
 
-```sh
-# List customer's saved payment methods
-go test -count=1 -v -run TestListCustomerPaymentMethods sdk/*.go
+📁 **See [examples/README.md](examples/README.md) for full details**
+
+## Quick Start
+
+Here's a simple example of using the SDK to list customers:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
+)
+
+func main() {
+	// Initialize the MartianPay client with your API key
+	apiKey := "your_api_key_here" // Replace with your actual API key
+	client := martianpay.NewClient(apiKey)
+
+	// Create request to list customers
+	req := martianpay.CustomerListRequest{
+		Page:     0,  // Start from page 0
+		PageSize: 10, // Get 10 customers per page
+	}
+
+	// Call the ListCustomers API
+	resp, err := client.ListCustomers(req)
+	if err != nil {
+		log.Fatalf("Failed to list customers: %v", err)
+	}
+
+	// Display results
+	fmt.Printf("Total customers: %d\n", resp.Total)
+	fmt.Printf("Customers on this page: %d\n\n", len(resp.Customers))
+
+	// Print each customer
+	for i, customer := range resp.Customers {
+		fmt.Printf("Customer %d:\n", i+1)
+		fmt.Printf("  ID: %s\n", customer.ID)
+		if customer.Email != nil {
+			fmt.Printf("  Email: %s\n", *customer.Email)
+		}
+		if customer.Name != nil {
+			fmt.Printf("  Name: %s\n", *customer.Name)
+		}
+		fmt.Printf("  Total Payment: %.2f %s\n", customer.TotalPayment, customer.Currency)
+		fmt.Println()
+	}
+}
 ```
 
-### Fiat/Card Payment Tests
+## Running Unit Tests
 
-```sh
-# Fiat payment with new card
-go test -count=1 -v -run TestFiatPaymentWithNewCard sdk/*.go
+The SDK includes comprehensive unit tests for all features. See [sdk/README.md](sdk/README.md) for detailed testing instructions.
 
-# Fiat payment with saved card
-go test -count=1 -v -run TestFiatPaymentWithSavedCard sdk/*.go
+## Keeping SDK Up to Date
+
+To ensure you're using the latest features and bug fixes:
+
+```bash
+# Update to the latest SDK version
+go get -u github.com/MartianPay/martianpay-go-sample
+
+# Update all dependencies
+go mod tidy
 ```
 
-### Refund Tests
+> **💡 Tip**: Run `go get -u github.com/MartianPay/martianpay-go-sample` periodically to get the latest features, improvements, and bug fixes.
 
-```sh
-# Create refund
-go test -count=1 -v -run TestCreateRefund sdk/*.go
+### What's New
 
-# Get specific refund
-go test -count=1 -v -run TestGetRefund sdk/*.go
+The SDK is regularly updated with:
+- ✅ Enhanced error handling with `error_code` field support
+- ✅ Comprehensive integration documentation and examples
+- ✅ Support for the latest MartianPay API features
+- ✅ Bug fixes and performance improvements
 
-# List refunds
-go test -count=1 -v -run TestListRefunds sdk/*.go
-```
+## Documentation & Resources
 
-### Payroll Tests
+- 📖 [Interactive Examples](examples/README.md) - 28 ready-to-run examples
+- 📖 [SDK Unit Tests](sdk/README.md) - Comprehensive SDK testing guide
+- 📖 [MartianPay.js Widget Guide](https://docs.martianpay.com/v1/docs/martianpay-js-usage) - Recommended integration method
+- 📖 [API Reference](https://docs.martianpay.com) - Full API documentation
+- 🏠 [MartianPay Dashboard](https://dashboard.martianpay.com) - Get your API key
 
-```sh
-# Create direct payroll with auto-approval
-go test -count=1 -v -run TestCreateDirectPayroll sdk/*.go
+## Support
 
-# Get specific payroll
-go test -count=1 -v -run TestGetPayroll sdk/*.go
+Need help? Here are your options:
 
-# List payrolls
-go test -count=1 -v -run TestListPayrolls sdk/*.go
-
-# List payroll items
-go test -count=1 -v -run TestListPayrollItems sdk/*.go
-```
-
-### Merchant Address (Wallet) Tests
-
-```sh
-# Create a merchant address
-go test -count=1 -v -run TestCreateMerchantAddress sdk/*.go
-
-# Get specific merchant address
-go test -count=1 -v -run TestGetMerchantAddress sdk/*.go
-
-# Update merchant address (set alias)
-go test -count=1 -v -run TestUpdateMerchantAddress sdk/*.go
-
-# Verify merchant address ownership
-go test -count=1 -v -run TestVerifyMerchantAddress sdk/*.go
-
-# List all merchant addresses
-go test -count=1 -v -run TestListMerchantAddresses sdk/*.go
-
-# List merchant addresses by network
-go test -count=1 -v -run TestListMerchantAddressesByNetwork sdk/*.go
-
-# Delete a merchant address
-go test -count=1 -v -run TestDeleteMerchantAddress sdk/*.go
-
-# Complete workflow: create and verify address
-go test -count=1 -v -run TestCreateAndVerifyMerchantAddress sdk/*.go
-```
-
-## Webhook event receiver test
-
-First, run main.go:
-```sh
-go run main.go
-```
-Then use the following curl command to send a test event:
-```sh
-curl --location 'http://localhost:8080/v1/webhook_test' \
---header 'Content-Type: application/json' \
---header 'Martian-Pay-Signature: t=1745580845,v1=c16a830eae640a659025a5f4bf91866ddd4be0c85619a82defad3c10af42ec89' \
---header 'User-Agent: MartianPay/1.0' \
---data '{"id":"evt_056qw9fr9PndljykFUqSIf6t","object":"event","api_version":"2025-01-22","created":1745580845,"data":{"previous_attributes":null,"object":{"id":"pi_nKSxQrU2Pjh9KGzyIRJcWpGJ","object":"payment_intent","amount":{"asset_id":"USD","amount":"1"},"payment_details":{"amount_captured":{"asset_id":"USD","amount":"1"},"amount_refunded":{"asset_id":"USD","amount":"0"},"tx_fee":{"asset_id":"USD","amount":"0"},"tax_fee":{"asset_id":"USD","amount":"0"},"frozen_amount":{"asset_id":"USD","amount":"0"},"net_amount":{"asset_id":"USD","amount":"0"},"gas_fee":{},"network_fee":{"asset_id":"USD","amount":"0"}},"canceled_at":0,"cancellation_reason":"","client_secret":"pi_nKSxQrU2Pjh9KGzyIRJcWpGJ_secret_S77UnKrHOv10a6x1SSjbKwwI6","created":1745580777,"updated":1745580781,"currency":"USD","customer":{"id":"cus_7Xpxk2n22WAEBDaBVlG5dnRf","object":"customer","total_expense":300,"total_payment":320,"total_refund":20,"currency":"USD","created":1740731398,"name":"","email":"yihuazhai@163.com","description":"","phone":""},"description":"test","livemode":false,"metadata":{"merchant_id":"accu_M7PTgveSgMtTtPHbjFgEtAlD","merchant_name":"ABC Company 1","payment_link":{"active":true,"created_at":1744181243,"id":"test_NivLsKfDfKuNPdULFVPvrhVx","product_items":[{"product":{"active":true,"created_at":1744181220,"description":"","id":"prod_7pwJj8FLyBsehx","metadata":null,"name":"test","picture_url":"","price":{"amount":"1","asset_id":"USD"},"tax_code":"","updated_at":1744181220},"quantity":1}],"total_price":{"amount":"1","asset_id":"USD"},"updated_at":1744181243}},"payment_link_details":{"merchant_id":"accu_M7PTgveSgMtTtPHbjFgEtAlD","merchant_name":"ABC Company 1","payment_link":{"id":"test_NivLsKfDfKuNPdULFVPvrhVx","product_items":[{"product":{"id":"prod_7pwJj8FLyBsehx","name":"test","price":{"asset_id":"USD","amount":"1"},"description":"","picture_url":"","tax_code":"","metadata":null,"active":true,"updated_at":1744181220,"created_at":1744181220},"quantity":1}],"total_price":{"asset_id":"USD","amount":"1"},"active":true,"updated_at":1744181243,"created_at":1744181243}},"merchant_order_id":"test_NivLsKfDfKuNPdULFVPvrhVx","payment_method_type":"crypto","charges":[{"id":"ch_UQBFpYEomiYmkAF0wfRIQQ7g","object":"charge","amount":{"asset_id":"USDC-Ethereum-TEST","amount":"1"},"payment_details":{"amount_captured":{"asset_id":"USDC-Ethereum-TEST","amount":"1"},"amount_refunded":{"asset_id":"USDC-Ethereum-TEST","amount":"0"},"tx_fee":{"asset_id":"USDC-Ethereum-TEST","amount":"0"},"tax_fee":{"asset_id":"USDC-Ethereum-TEST","amount":"0"},"frozen_amount":{"asset_id":"USDC-Ethereum-TEST","amount":"0"},"net_amount":{"asset_id":"USDC-Ethereum-TEST","amount":"0"},"gas_fee":{},"network_fee":{"asset_id":"USDC-Ethereum-TEST","amount":"0"}},"exchange_rate":"1.0","calculated_statement_descriptor":"","captured":false,"created":0,"customer":"","description":"","disputed":false,"failure_code":"","failure_message":"","fraud_details":null,"livemode":false,"metadata":null,"paid":false,"payment_intent":"pi_nKSxQrU2Pjh9KGzyIRJcWpGJ","payment_method_type":"crypto","payment_method_options":{"crypto":{"amount":"1000000","token":"USDC","asset_id":"USDC-Ethereum-TEST","network":"Ethereum Sepolia","decimals":6,"exchange_rate":"1.0","deposit_address":"0xa4547D6644a46ed4F395D36d4680800eF5c53bf6","expired_at":1745582581}},"transactions":[{"tx_id":"de3ce20e-1407-47e5-a406-ded38947c486","source_address":"0x36279Ac046498bF0cb742622cCe22F3cE3c2AfD9","destination_address":"0xa4547D6644a46ed4F395D36d4680800eF5c53bf6","tx_hash":"0xa2b3ed89adab6fa946c3be99d65a43f718e12a87eb92f548b3d1ded241fb8e12","amount":"1000000","decimals":6,"asset_id":"USDC-Ethereum-TEST","token":"USDC","network":"Ethereum Sepolia","type":"deposit","created_at":1745580844,"status":"confirmed","aml_status":"approved","aml_info":"","charge_id":"ch_UQBFpYEomiYmkAF0wfRIQQ7g","refund_id":"","fee_info":"network_fee:\"0.001791756437565262\"","fee_currency":"ETH_TEST5"}],"receipt_email":"","receipt_url":"","refunded":false,"refunds":[],"review":null}],"receipt_email":"yihuazhai@163.com","status":"Success","payment_intent_status":"Confirmed","one_time_payment":false}},"livemode":false,"pending_webhooks":0,"type":"payment_intent.succeeded"}'
-```
+- 📚 Check the [examples directory](examples/) for code samples
+- 📖 Read the [API documentation](https://docs.martianpay.com)
+- 💬 Contact support through the [MartianPay Dashboard](https://dashboard.martianpay.com)

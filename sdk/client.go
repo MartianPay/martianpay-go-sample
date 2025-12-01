@@ -32,9 +32,49 @@ func NewClient(apiKey string) *Client {
 
 // CommonResponse represents the common response structure
 type CommonResponse struct {
-	Code int             `json:"code"`
-	Msg  string          `json:"msg"`
-	Data json.RawMessage `json:"data"`
+	Code      int             `json:"code"`       // Deprecated HTTP-level code
+	ErrorCode string          `json:"error_code"` // Business-level error code
+	Msg       string          `json:"msg"`        // Error message
+	Data      json.RawMessage `json:"data"`       // Response data
+}
+
+// getHTTPStatusText returns human-readable text for HTTP status codes
+func getHTTPStatusText(statusCode int) string {
+	switch statusCode {
+	case 400:
+		return "Bad Request"
+	case 401:
+		return "Unauthorized"
+	case 402:
+		return "Payment Required"
+	case 403:
+		return "Forbidden"
+	case 404:
+		return "Not Found"
+	case 405:
+		return "Method Not Allowed"
+	case 409:
+		return "Conflict"
+	case 422:
+		return "Unprocessable Entity"
+	case 429:
+		return "Too Many Requests"
+	case 500:
+		return "Internal Server Error"
+	case 502:
+		return "Bad Gateway"
+	case 503:
+		return "Service Unavailable"
+	case 504:
+		return "Gateway Timeout"
+	default:
+		if statusCode >= 400 && statusCode < 500 {
+			return "Client Error"
+		} else if statusCode >= 500 {
+			return "Server Error"
+		}
+		return "Unknown Status"
+	}
 }
 
 // sendRequest sends an HTTP request to the MartianPay API
@@ -65,11 +105,28 @@ func (c *Client) sendRequest(method, path string, body interface{}, response int
 	}
 	defer resp.Body.Close()
 
+	// Check HTTP status code first
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		statusText := getHTTPStatusText(resp.StatusCode)
+		if len(bodyBytes) > 0 {
+			return fmt.Errorf("HTTP %d %s: %s", resp.StatusCode, statusText, string(bodyBytes))
+		}
+		return fmt.Errorf("HTTP %d %s", resp.StatusCode, statusText)
+	}
+
 	var commonResp CommonResponse
 	if err := json.NewDecoder(resp.Body).Decode(&commonResp); err != nil {
 		return fmt.Errorf("error decoding response: %v", err)
 	}
 
+	// Check for business-level errors (error_code field)
+	// Skip error check if error_code is empty, "ok", or "success"
+	if commonResp.ErrorCode != "" && commonResp.ErrorCode != "ok" && commonResp.ErrorCode != "success" {
+		return fmt.Errorf("API error [%s]: %s", commonResp.ErrorCode, commonResp.Msg)
+	}
+
+	// Legacy: check deprecated Code field
 	if commonResp.Code != 0 {
 		return fmt.Errorf("API error: %s", commonResp.Msg)
 	}
@@ -157,11 +214,28 @@ func (c *Client) sendRequestWithQuery(method, path string, params interface{}, r
 	}
 	defer resp.Body.Close()
 
+	// Check HTTP status code first
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		statusText := getHTTPStatusText(resp.StatusCode)
+		if len(bodyBytes) > 0 {
+			return fmt.Errorf("HTTP %d %s: %s", resp.StatusCode, statusText, string(bodyBytes))
+		}
+		return fmt.Errorf("HTTP %d %s", resp.StatusCode, statusText)
+	}
+
 	var commonResp CommonResponse
 	if err := json.NewDecoder(resp.Body).Decode(&commonResp); err != nil {
 		return fmt.Errorf("error decoding response: %v", err)
 	}
 
+	// Check for business-level errors (error_code field)
+	// Skip error check if error_code is empty, "ok", or "success"
+	if commonResp.ErrorCode != "" && commonResp.ErrorCode != "ok" && commonResp.ErrorCode != "success" {
+		return fmt.Errorf("API error [%s]: %s", commonResp.ErrorCode, commonResp.Msg)
+	}
+
+	// Legacy: check deprecated Code field
 	if commonResp.Code != 0 {
 		return fmt.Errorf("API error: %s", commonResp.Msg)
 	}
