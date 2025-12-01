@@ -2,10 +2,8 @@ module github.com/MartianPay/martianpay-go-sample/examples
 
 go 1.25.3
 
-// replace github.com/MartianPay/martianpay-go-sample => ../../martianpay-go-sample
-
 require (
-	github.com/MartianPay/martianpay-go-sample v0.0.0-20251129171550-c744be071248
+	github.com/MartianPay/martianpay-go-sample v0.0.0-20251201030120-74d8af69b0f0
 	github.com/gin-gonic/gin v1.11.0
 )
 
