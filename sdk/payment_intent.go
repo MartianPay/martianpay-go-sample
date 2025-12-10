@@ -6,16 +6,9 @@ import (
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 )
 
-type PaymentIntentCreateRequest struct {
-	developer.PaymentIntentParams
-}
-
-type PaymentIntentCreateResp struct {
-	developer.PaymentIntent
-}
-
-func (c *Client) CreatePaymentIntent(req PaymentIntentCreateRequest) (*PaymentIntentCreateResp, error) {
-	var response PaymentIntentCreateResp
+// CreatePaymentIntent creates a new payment intent
+func (c *Client) CreatePaymentIntent(req *developer.PaymentIntentCreateRequest) (*developer.PaymentIntentCreateResp, error) {
+	var response developer.PaymentIntentCreateResp
 	err := c.sendRequest("POST", "/v1/payment_intents", req, &response)
 	if err != nil {
 		return nil, err
@@ -23,66 +16,29 @@ func (c *Client) CreatePaymentIntent(req PaymentIntentCreateRequest) (*PaymentIn
 	return &response, nil
 }
 
-type PaymentIntentUpdateRequest struct {
-	ID                string
-	PaymentLinkId     *string                                `json:"payment_link_id"`
-	PaymentMethodType *developer.PaymentMethodType           `json:"payment_method_type"` // crypto, visa, mastercard, apple pay, google pay, etc.
-	PaymentMethodData *developer.PaymentMethodConfirmOptions `json:"payment_method_options"`
-}
-
-type PaymentIntentUpdateResp struct {
-	developer.PaymentIntent
-}
-
-func (c *Client) UpdatePaymentIntent(req PaymentIntentUpdateRequest) (*PaymentIntentUpdateResp, error) {
-	var response PaymentIntentUpdateResp
-	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s", req.ID), req, &response)
+// UpdatePaymentIntent updates a payment intent
+func (c *Client) UpdatePaymentIntent(id string, req *developer.PaymentIntentUpdateRequest) (*developer.PaymentIntentUpdateResp, error) {
+	var response developer.PaymentIntentUpdateResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s", id), req, &response)
 	if err != nil {
 		return nil, err
 	}
 	return &response, nil
-}
-
-type PaymentIntentGetReq struct {
-	ID string
-}
-
-type PaymentIntentGetResp struct {
-	developer.PaymentIntent
 }
 
 // GetPaymentIntent retrieves a specific payment intent by ID
-func (c *Client) GetPaymentIntent(req PaymentIntentGetReq) (*PaymentIntentGetResp, error) {
-	var response PaymentIntentGetResp
-	err := c.sendRequest("GET", fmt.Sprintf("/v1/payment_intents/%s", req.ID), nil, &response)
+func (c *Client) GetPaymentIntent(id string) (*developer.PaymentIntentGetResp, error) {
+	var response developer.PaymentIntentGetResp
+	err := c.sendRequest("GET", fmt.Sprintf("/v1/payment_intents/%s", id), nil, &response)
 	if err != nil {
 		return nil, err
 	}
 	return &response, nil
 }
 
-type PaymentIntentListReq struct {
-	// Pagination
-	Page     int32 `json:"page" binding:"min=0"`               // Page number, starting from 0
-	PageSize int32 `json:"page_size" binding:"required,min=1"` // Items per page
-
-	// Filters
-	Customer                *string `json:"customer,omitempty"`                   // Filter by customer
-	CustomerEmail           *string `json:"customer_email,omitempty"`             // Filter by customer email
-	PermanentDeposit        *bool   `json:"permanent_deposit,omitempty"`          // Filter by permanent deposit status
-	PermanentDepositAssetId *string `json:"permanent_deposit_asset_id,omitempty"` // Filter by permanent deposit asset ID
-}
-
-type PaymentIntentListResp struct {
-	PaymentIntents []*developer.PaymentIntent `json:"payment_intents"` // List of payment intents
-	Total          int64                      `json:"total"`           // Total number of records matching the filters
-	Page           int32                      `json:"page"`            // Current page number
-	PageSize       int32                      `json:"page_size"`       // Items per page
-}
-
 // ListPaymentIntents retrieves a list of payment intents based on the provided parameters
-func (c *Client) ListPaymentIntents(req PaymentIntentListReq) (*PaymentIntentListResp, error) {
-	var response PaymentIntentListResp
+func (c *Client) ListPaymentIntents(req *developer.PaymentIntentListRequest) (*developer.PaymentIntentListResp, error) {
+	var response developer.PaymentIntentListResp
 	err := c.sendRequestWithQuery("GET", "/v1/payment_intents", req, &response)
 	if err != nil {
 		return nil, err
@@ -90,20 +46,40 @@ func (c *Client) ListPaymentIntents(req PaymentIntentListReq) (*PaymentIntentLis
 	return &response, nil
 }
 
-type PaymentIntentCancelReq struct {
-	ID     string  `json:"-"`                // Payment Intent ID (sent in URL)
-	Reason *string `json:"reason,omitempty"` // Optional cancellation reason
-}
-
-type PaymentIntentCancelResp struct {
-	developer.PaymentIntent
-}
-
 // CancelPaymentIntent cancels a payment intent
-// Only payment intents with status "RequiresPaymentMethod" or those that have exceeded their payment timeout can be canceled
-func (c *Client) CancelPaymentIntent(req PaymentIntentCancelReq) (*PaymentIntentCancelResp, error) {
-	var response PaymentIntentCancelResp
-	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s/cancel", req.ID), req, &response)
+func (c *Client) CancelPaymentIntent(id string, req *developer.PaymentIntentCancelRequest) (*developer.PaymentIntentUpdateResp, error) {
+	var response developer.PaymentIntentUpdateResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s/cancel", id), req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// CreatePaymentIntentLink creates a payment intent with payment link
+func (c *Client) CreatePaymentIntentLink(req *developer.PaymentIntentLinkCreateRequest) (*developer.PaymentIntentLinkCreateResp, error) {
+	var response developer.PaymentIntentLinkCreateResp
+	err := c.sendRequest("POST", "/v1/payment_intents/link", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// UpdatePaymentIntentLink updates a payment intent link
+func (c *Client) UpdatePaymentIntentLink(id string, req *developer.PaymentIntentLinkUpdateRequest) (*developer.PaymentIntentUpdateResp, error) {
+	var response developer.PaymentIntentUpdateResp
+	err := c.sendRequest("POST", fmt.Sprintf("/v1/payment_intents/%s/link", id), req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// CreatePaymentIntentInvoice creates a payment intent with invoice
+func (c *Client) CreatePaymentIntentInvoice(req *developer.PaymentIntentInvoiceCreateRequest) (*developer.PaymentIntentInvoiceCreateResponse, error) {
+	var response developer.PaymentIntentInvoiceCreateResponse
+	err := c.sendRequest("POST", "/v1/payment_intents/invoice", req, &response)
 	if err != nil {
 		return nil, err
 	}

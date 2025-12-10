@@ -1,39 +1,104 @@
 package developer
 
 const (
+	// RefundObject is the type identifier for refund objects
 	RefundObject = "refund"
 )
 
+// RefundParams contains parameters for creating a refund
 type RefundParams struct {
-	Amount string `json:"amount" binding:"required"` // Amount to refund in the smallest currency unit
-	// Currency string `json:"currency"`
-
-	Metadata map[string]string `json:"metadata"` // Additional metadata to attach to the refund
-
-	PaymentIntent *string `json:"payment_intent_id" binding:"required"` // ID of payment intent to refund
-
-	Reason      *string `json:"reason"`      // Reason for the refund
-	Description *string `json:"description"` // Description of the refund
+	// Amount is the amount to refund in the smallest currency unit
+	Amount string `json:"amount" binding:"required"`
+	// Metadata is additional metadata to attach to the refund
+	Metadata map[string]string `json:"metadata"`
+	// PaymentIntent is the ID of payment intent to refund
+	PaymentIntent *string `json:"payment_intent_id" binding:"required"`
+	// Reason is the reason for the refund
+	Reason *string `json:"reason"`
+	// Description is the description of the refund
+	Description *string `json:"description"`
 }
 
+// Refund represents a refund transaction
 type Refund struct {
-	ID          string       `json:"id"`          // Unique identifier for the refund
-	Object      string       `json:"object"`      // Object type, always "refund"
-	Amount      *AssetAmount `json:"amount"`      // Amount refunded in the smallest currency unit
-	NetworkFee  *AssetAmount `json:"network_fee"` // Network fee charged for processing the refund
-	NetAmount   *AssetAmount `json:"net_amount"`  // Net amount after deducting fees
-	Created     int64        `json:"created"`     // Unix timestamp when the refund was created
-	Description string       `json:"description"` // Description of the refund
+	// ID is the unique identifier for the refund
+	ID string `json:"id"`
+	// Object is the type identifier, always "refund"
+	Object string `json:"object"`
+	// Amount is the amount refunded in the smallest currency unit
+	Amount *AssetAmount `json:"amount"`
+	// NetworkFee is the network fee charged for processing the refund
+	NetworkFee *AssetAmount `json:"network_fee"`
+	// NetAmount is the net amount after deducting fees
+	NetAmount *AssetAmount `json:"net_amount"`
+	// Created is the Unix timestamp when the refund was created
+	Created int64 `json:"created"`
+	// Description is the description of the refund
+	Description string `json:"description"`
+	// Transactions is the list of blockchain transactions associated with the refund
+	Transactions []*TransactionDetails `json:"transactions"`
+	// FailureReason is the reason for refund failure if applicable
+	FailureReason string `json:"failure_reason"`
+	// Metadata is additional metadata attached to the refund
+	Metadata map[string]string `json:"metadata"`
+	// Charge is the ID of charge that's refunded
+	Charge *string `json:"charge"`
+	// PaymentIntent is the ID of the payment intent
+	PaymentIntent *string `json:"payment_intent"`
+	// RefundAddress is the address where funds are refunded to
+	RefundAddress *string `json:"refund_address"`
+	// Reason is the reason for the refund
+	Reason string `json:"reason"`
+	// Status is the status of the refund (Pending, Success, Failed, Canceled)
+	Status string `json:"status"`
+}
 
-	Transactions  []*TransactionDetails `json:"transactions"`   // List of blockchain transactions associated with the refund
-	FailureReason string                `json:"failure_reason"` // Reason for refund failure if applicable
-	Metadata      map[string]string     `json:"metadata"`       // Additional metadata attached to the refund
+// ================================
+// Request Types
+// ================================
 
-	Charge        *string `json:"charge"`         // ID of charge that's refunded
-	PaymentIntent *string `json:"payment_intent"` // ID of the payment intent
+// RefundCreateRequest represents a request to create a new refund
+type RefundCreateRequest struct {
+	RefundParams
+}
 
-	RefundAddress *string `json:"refund_address"` // Address where funds are refunded to
+// RefundGetRequest represents a request to get a refund by ID
+type RefundGetRequest struct {
+	// Unique identifier of the refund to retrieve
+	ID string
+}
 
-	Reason string `json:"reason"` // Reason for the refund
-	Status string `json:"status"` // Status of the refund (Pending, Success, Failed, Canceled)
+// RefundListRequest represents a request to list refunds with pagination and filters
+type RefundListRequest struct {
+	Pagination
+
+	// Filter refunds by payment intent ID
+	PaymentIntent *string `json:"payment_intent,omitempty" form:"payment_intent"`
+}
+
+// ================================
+// Response Types
+// ================================
+
+// RefundCreateResp represents the response containing newly created refunds
+type RefundCreateResp struct {
+	// List of created refunds
+	Refunds []Refund `json:"refunds"`
+}
+
+// RefundGetResp represents the response containing a single refund's details
+type RefundGetResp struct {
+	Refund
+}
+
+// RefundListResp represents the response containing a paginated list of refunds
+type RefundListResp struct {
+	// List of refunds
+	Refunds []Refund `json:"refunds"`
+	// Total number of records matching the filters
+	Total int64 `json:"total"`
+	// Current page number
+	Page int32 `json:"page"`
+	// Items per page
+	PageSize int32 `json:"page_size"`
 }

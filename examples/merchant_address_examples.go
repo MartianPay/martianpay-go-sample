@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
@@ -12,9 +13,31 @@ import (
 func createMerchantAddress(client *martianpay.Client) {
 	fmt.Println("Creating Merchant Address...")
 
-	req := martianpay.MerchantAddressCreateRequest{
-		Network: "Ethereum Sepolia",
-		Address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+	scanner := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Enter Network (e.g., Ethereum Sepolia): ")
+	var network string
+	if scanner.Scan() {
+		network = scanner.Text()
+	}
+	if network == "" {
+		network = "Ethereum Sepolia"
+		fmt.Printf("Using default network: %s\n", network)
+	}
+
+	fmt.Print("Enter Address: ")
+	var address string
+	if scanner.Scan() {
+		address = scanner.Text()
+	}
+	if address == "" {
+		fmt.Println("Error: Address cannot be empty")
+		return
+	}
+
+	req := &developer.MerchantAddressCreateRequest{
+		Network: network,
+		Address: address,
 	}
 
 	resp, err := client.CreateMerchantAddress(req)
@@ -65,12 +88,11 @@ func updateMerchantAddress(client *martianpay.Client) {
 	}
 
 	alias := "My Main Wallet"
-	req := martianpay.MerchantAddressUpdateRequest{
-		ID:    id,
+	req := &developer.MerchantAddressUpdateRequest{
 		Alias: &alias,
 	}
 
-	resp, err := client.UpdateMerchantAddress(req)
+	resp, err := client.UpdateMerchantAddress(id, req)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -92,12 +114,11 @@ func verifyMerchantAddress(client *martianpay.Client) {
 		id = "ma_example_id"
 	}
 
-	req := martianpay.MerchantAddressVerifyRequest{
-		ID:     id,
+	req := &developer.MerchantAddressVerifyRequest{
 		Amount: "0.01",
 	}
 
-	resp, err := client.VerifyMerchantAddress(req)
+	resp, err := client.VerifyMerchantAddress(id, req)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -111,7 +132,7 @@ func verifyMerchantAddress(client *martianpay.Client) {
 func listMerchantAddresses(client *martianpay.Client) {
 	fmt.Println("Listing Merchant Addresses...")
 
-	req := martianpay.MerchantAddressListRequest{
+	req := &developer.MerchantAddressListRequest{
 		Page:     0,
 		PageSize: 10,
 	}
@@ -144,7 +165,7 @@ func listMerchantAddressesByNetwork(client *martianpay.Client) {
 		network = "Ethereum Sepolia"
 	}
 
-	req := martianpay.MerchantAddressListRequest{
+	req := &developer.MerchantAddressListRequest{
 		Page:     0,
 		PageSize: 10,
 		Network:  &network,
@@ -186,9 +207,31 @@ func deleteMerchantAddress(client *martianpay.Client) {
 func createAndVerifyMerchantAddress(client *martianpay.Client) {
 	fmt.Println("Create and Verify Merchant Address (Full Workflow)...")
 
-	req := martianpay.MerchantAddressCreateRequest{
-		Network: "Ethereum Sepolia",
-		Address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+	scanner := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Enter Network (e.g., Ethereum Sepolia): ")
+	var network string
+	if scanner.Scan() {
+		network = scanner.Text()
+	}
+	if network == "" {
+		network = "Ethereum Sepolia"
+		fmt.Printf("Using default network: %s\n", network)
+	}
+
+	fmt.Print("Enter Address: ")
+	var address string
+	if scanner.Scan() {
+		address = scanner.Text()
+	}
+	if address == "" {
+		fmt.Println("Error: Address cannot be empty")
+		return
+	}
+
+	req := &developer.MerchantAddressCreateRequest{
+		Network: network,
+		Address: address,
 	}
 
 	resp, err := client.CreateMerchantAddress(req)

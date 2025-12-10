@@ -18,10 +18,18 @@ func createRefund(client *martianpay.Client) {
 		paymentIntentID = "pi_example_id"
 	}
 
+	fmt.Print("Enter refund amount (or press Enter for default 10.00): ")
+	var amountInput string
+	fmt.Scanln(&amountInput)
+	if amountInput == "" {
+		amountInput = "10.00"
+	}
+
 	reason := "Customer requested refund"
-	req := martianpay.RefundCreateRequest{
+	req := &developer.RefundCreateRequest{
 		RefundParams: developer.RefundParams{
 			PaymentIntent: &paymentIntentID,
+			Amount:        amountInput,
 			Reason:        &reason,
 		},
 	}
@@ -50,7 +58,7 @@ func getRefund(client *martianpay.Client) {
 		id = "rf_example_id"
 	}
 
-	response, err := client.GetRefund(martianpay.RefundGetRequest{ID: id})
+	response, err := client.GetRefund(id)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -66,9 +74,11 @@ func getRefund(client *martianpay.Client) {
 func listRefunds(client *martianpay.Client) {
 	fmt.Println("Listing Refunds...")
 
-	req := martianpay.RefundListRequest{
-		Page:     0,
-		PageSize: 10,
+	req := &developer.RefundListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
 	}
 
 	response, err := client.ListRefunds(req)

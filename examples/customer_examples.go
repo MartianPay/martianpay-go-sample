@@ -2,20 +2,30 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
+// generateRandomEmail generates a random email address
+func generateRandomEmail(prefix string) string {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(1000000)
+	timestamp := time.Now().Unix()
+	return fmt.Sprintf("%s_%d_%d@example.com", prefix, timestamp, randomNum)
+}
+
 // Customer Examples
 func createAndUpdateCustomer(client *martianpay.Client) {
 	fmt.Println("Creating and Updating Customer...")
 
-	email := "newcustomer@example.com"
+	email := generateRandomEmail("customer")
 	name := "John Doe"
 	description := "Test customer"
 
-	createReq := martianpay.CustomerCreateRequest{
+	createReq := &developer.CustomerCreateRequest{
 		CustomerParams: developer.CustomerParams{
 			Email:       &email,
 			Name:        &name,
@@ -35,14 +45,13 @@ func createAndUpdateCustomer(client *martianpay.Client) {
 	fmt.Printf("  Name: %s\n\n", *createResp.Name)
 
 	newName := "John Updated"
-	updateReq := martianpay.CustomerUpdateRequest{
-		ID: createResp.ID,
+	updateReq := &developer.CustomerUpdateRequest{
 		CustomerParams: developer.CustomerParams{
 			Name: &newName,
 		},
 	}
 
-	updateResp, err := client.UpdateCustomer(updateReq)
+	updateResp, err := client.UpdateCustomer(createResp.ID, updateReq)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -63,7 +72,7 @@ func getCustomer(client *martianpay.Client) {
 		id = "cus_example_id"
 	}
 
-	response, err := client.GetCustomer(martianpay.CustomerGetRequest{ID: id})
+	response, err := client.GetCustomer(id)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -84,9 +93,11 @@ func getCustomer(client *martianpay.Client) {
 func listCustomers(client *martianpay.Client) {
 	fmt.Println("Listing Customers...")
 
-	req := martianpay.CustomerListRequest{
-		Page:     0,
-		PageSize: 10,
+	req := &developer.CustomerListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
 	}
 
 	response, err := client.ListCustomers(req)
@@ -113,9 +124,9 @@ func listCustomers(client *martianpay.Client) {
 func deleteCustomer(client *martianpay.Client) {
 	fmt.Println("Deleting Customer...")
 
-	email := "delete_test@example.com"
+	email := generateRandomEmail("delete_test")
 	name := "Delete Test Customer"
-	createReq := martianpay.CustomerCreateRequest{
+	createReq := &developer.CustomerCreateRequest{
 		CustomerParams: developer.CustomerParams{
 			Email: &email,
 			Name:  &name,
@@ -130,7 +141,7 @@ func deleteCustomer(client *martianpay.Client) {
 
 	fmt.Printf("  Created customer: %s\n", createResp.ID)
 
-	_, err = client.DeleteCustomer(martianpay.CustomerDeleteRequest{ID: createResp.ID})
+	err = client.DeleteCustomer(createResp.ID)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -149,11 +160,7 @@ func listCustomerPaymentMethods(client *martianpay.Client) {
 		customerID = "cus_example_id"
 	}
 
-	req := martianpay.CustomerPaymentMethodListRequest{
-		CustomerID: customerID,
-	}
-
-	resp, err := client.ListCustomerPaymentMethods(req)
+	resp, err := client.ListCustomerPaymentMethods(customerID)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return

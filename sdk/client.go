@@ -148,23 +148,34 @@ func (c *Client) sendRequestWithQuery(method, path string, params interface{}, r
 		v := reflect.ValueOf(params)
 		t := reflect.TypeOf(params)
 
+		// Handle pointer types
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+			t = t.Elem()
+		}
+
 		for i := 0; i < v.NumField(); i++ {
 			field := v.Field(i)
 			fieldType := t.Field(i)
-			jsonTag := fieldType.Tag.Get("json")
+
+			// Try form tag first, then fall back to json tag
+			tag := fieldType.Tag.Get("form")
+			if tag == "" {
+				tag = fieldType.Tag.Get("json")
+			}
 
 			// Skip if field is empty or nil
-			if jsonTag == "" || jsonTag == "-" {
+			if tag == "" || tag == "-" {
 				continue
 			}
 
-			// Extract field name from json tag
-			fieldName := jsonTag
-			if idx := len(jsonTag); idx > 0 {
+			// Extract field name from tag (handle comma-separated options)
+			fieldName := tag
+			if idx := len(tag); idx > 0 {
 				if commaIdx := 0; commaIdx < idx {
-					for j, c := range jsonTag {
+					for j, c := range tag {
 						if c == ',' {
-							fieldName = jsonTag[:j]
+							fieldName = tag[:j]
 							break
 						}
 					}

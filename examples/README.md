@@ -2,6 +2,12 @@
 
 This directory contains an interactive menu-driven example program demonstrating how to use the MartianPay Go SDK as a third-party library.
 
+**✨ Key Features:**
+- 📋 Two-level menu system organized by feature category
+- 🎲 Automatic randomization of emails and order IDs to prevent duplicates
+- 🎯 Interactive prompts for flexible input (addresses, amounts, networks)
+- ✅ Comprehensive coverage of all SDK methods
+
 > **⚠️ Important**: These examples show the **API-only integration approach** to demonstrate all SDK methods. For production use, we recommend the **MartianPay.js Widget** for easier integration. See [Integration Approaches](#integration-approaches) below.
 
 ## Prerequisites
@@ -22,12 +28,7 @@ go mod tidy
 
 > **💡 Tip**: Run `go get -u github.com/MartianPay/martianpay-go-sample` periodically to ensure you're using the latest SDK version with newest features and bug fixes.
 
-2. Update the API key in `common.go`:
-```go
-const apiKey = "your_api_key_here" // Replace with your actual API key
-```
-
-3. Build and run the interactive examples:
+2. Build and run the interactive examples:
 ```bash
 # Using Makefile (recommended)
 make build    # Build the examples binary
@@ -38,11 +39,36 @@ go build -o examples
 ./examples
 ```
 
-4. Select from 28 available examples by entering a number (1-28):
+3. Enter your API key when prompted:
+```
+===========================================
+  MartianPay Go SDK Examples
+===========================================
 
-## Available Examples
+Enter your API key (or press Enter to use default):
+```
 
-### Payment Intent Examples (1-7)
+You can either:
+- Enter your own API key from [MartianPay Dashboard](https://dashboard.martianpay.com)
+- Press Enter to use the default key configured in `common.go` (if set)
+
+## How the Menu Works
+
+The examples use a **two-level menu system** for better organization:
+
+### Main Menu (Level 1)
+Select a category:
+1. **Payment Intent Examples**
+2. **Customer Examples**
+3. **Refund Examples**
+4. **Payroll Examples**
+5. **Merchant Address Examples**
+6. **Webhook Examples**
+
+### Submenu (Level 2)
+After selecting a category, you'll see specific examples:
+
+**Payment Intent Examples:**
 1. Create and Update Payment Intent (Crypto)
 2. Get Payment Intent
 3. List Payment Intents
@@ -51,44 +77,60 @@ go build -o examples
 6. Fiat Payment with New Card
 7. Fiat Payment with Saved Card
 
-### Customer Examples (8-12)
-8. Create and Update Customer
-9. Get Customer
-10. List Customers
-11. Delete Customer
-12. List Customer Payment Methods
+**Customer Examples:**
+1. Create and Update Customer
+2. Get Customer
+3. List Customers
+4. Delete Customer
+5. List Customer Payment Methods
 
-### Refund Examples (13-15)
-13. Create Refund
-14. Get Refund
-15. List Refunds
+**Refund Examples:**
+1. Create Refund
+2. Get Refund
+3. List Refunds
 
-### Payroll Examples (16-19)
-16. Create Direct Payroll
-17. Get Payroll
-18. List Payrolls
-19. List Payroll Items
+**Payroll Examples:**
+1. Create Direct Payroll
+2. Get Payroll
+3. List Payrolls
+4. List Payroll Items
 
-### Merchant Address Examples (20-27)
-20. Create Merchant Address
-21. Get Merchant Address
-22. Update Merchant Address
-23. Verify Merchant Address
-24. List Merchant Addresses
-25. List Merchant Addresses by Network
-26. Delete Merchant Address
-27. Create and Verify Merchant Address (Full Workflow)
+**Merchant Address Examples:**
+1. Create Merchant Address
+2. Get Merchant Address
+3. Update Merchant Address
+4. Verify Merchant Address
+5. List Merchant Addresses
+6. List Merchant Addresses by Network
+7. Delete Merchant Address
+8. Create and Verify Merchant Address (Full Workflow)
 
-### Webhook Examples (28)
-28. Start Webhook Event Receiver Server
+**Webhook Examples:**
+1. Start Webhook Event Receiver Server
 
-## How It Works
+Enter `0` at any level to go back or exit.
 
-The examples program provides an interactive menu where you can:
-- Browse all available SDK examples
-- Run specific examples by entering their number
-- See the results in real-time
-- Return to the menu after each example
+## Smart Features
+
+### 1. Automatic Randomization
+To prevent duplicate errors, the examples automatically generate unique values:
+- **Email addresses**: `customer_1733812345_123456@example.com`
+- **Order IDs**: `order_1733812345_123456`
+- **External IDs**: Timestamps and random numbers
+
+### 2. Interactive Input
+Key examples prompt for user input:
+- **Payroll creation**: Select crypto asset (from available balance), enter recipient address and amount
+- **Merchant address**: Enter network and blockchain address
+- **Refund creation**: Enter payment intent ID and refund amount
+- **Customer queries**: Enter customer ID or use defaults
+
+### 3. User-Friendly Flow
+- Two-level menu reduces clutter and improves navigation
+- Clear prompts with default values (press Enter to use default)
+- Input validation and helpful error messages
+- Return to category submenu after each example
+- Press `0` to go back or exit at any time
 
 This is a third-party usage demonstration - the examples import the MartianPay SDK just like you would in your own application.
 
@@ -308,8 +350,10 @@ The webhook server will:
 - These examples use the martianpay-go-sample package as an external dependency, just like you would in a real application
 - Each example includes detailed integration comments explaining both approaches
 - All API errors are printed with detailed error messages (`error_code` and `msg`)
-- Payment intent examples (1, 6, 7) include integration tips at the end of output
+- Payment intent examples include integration tips at the end of output
 - Remember to replace `"your_api_key_here"` in `common.go` with your actual API key before running
+- The menu system allows you to run multiple examples in one session without restarting
+- Emails and order IDs are automatically randomized to prevent duplicate errors
 
 ## Learn More
 

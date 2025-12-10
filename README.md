@@ -30,13 +30,19 @@ MartianPay offers flexible integration options to suit different use cases. For 
 
 ## Interactive Examples
 
-The fastest way to learn the SDK! We provide 28 ready-to-run examples covering all features:
+The fastest way to learn the SDK! We provide an interactive menu-driven interface with examples covering all features:
 
 ```bash
 cd examples
 make update   # Update to latest SDK version
 make run      # Run interactive examples menu
 ```
+
+**Features:**
+- 📋 Two-level menu system organized by feature category
+- 🎲 Automatic randomization of emails and order IDs to avoid duplicates
+- 🎯 User-friendly prompts for interactive input
+- ✅ Comprehensive coverage of all SDK methods
 
 The examples demonstrate the **API-only integration approach** to show all SDK methods. For production, we recommend using the **MartianPay.js Widget** for simpler integration.
 
@@ -93,9 +99,22 @@ func main() {
 }
 ```
 
-## Running Unit Tests
+## Testing the SDK
 
-The SDK includes comprehensive unit tests for all features. See [sdk/README.md](sdk/README.md) for detailed testing instructions.
+All SDK functionality can be tested through the interactive examples:
+
+```bash
+cd examples
+make run
+```
+
+Select from organized categories:
+1. **Payment Intent Examples** - Create, update, list, cancel payment intents
+2. **Customer Examples** - Manage customers and payment methods
+3. **Refund Examples** - Process and manage refunds
+4. **Payroll Examples** - Create and manage crypto payrolls
+5. **Merchant Address Examples** - Add and verify withdrawal addresses
+6. **Webhook Examples** - Test webhook event handling
 
 ## Keeping SDK Up to Date
 
@@ -111,18 +130,20 @@ go mod tidy
 
 > **💡 Tip**: Run `go get -u github.com/MartianPay/martianpay-go-sample` periodically to get the latest features, improvements, and bug fixes.
 
-### What's New
+### Recent Improvements
 
-The SDK is regularly updated with:
+Latest updates include:
+- ✅ Two-level interactive menu for better navigation
+- ✅ Automatic randomization of emails and order IDs to prevent duplicates
+- ✅ User input prompts for flexible testing (addresses, amounts, networks)
 - ✅ Enhanced error handling with `error_code` field support
+- ✅ Support for both `form` and `json` tags in query parameters
+- ✅ Fixed pointer type handling in reflection-based parameter parsing
 - ✅ Comprehensive integration documentation and examples
-- ✅ Support for the latest MartianPay API features
-- ✅ Bug fixes and performance improvements
 
 ## Documentation & Resources
 
-- 📖 [Interactive Examples](examples/README.md) - 28 ready-to-run examples
-- 📖 [SDK Unit Tests](sdk/README.md) - Comprehensive SDK testing guide
+- 📖 [Interactive Examples](examples/README.md) - Menu-driven examples for all features
 - 📖 [MartianPay.js Widget Guide](https://docs.martianpay.com/v1/docs/martianpay-js-usage) - Recommended integration method
 - 📖 [API Reference](https://docs.martianpay.com) - Full API documentation
 - 🏠 [MartianPay Dashboard](https://dashboard.martianpay.com) - Get your API key

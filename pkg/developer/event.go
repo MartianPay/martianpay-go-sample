@@ -48,37 +48,61 @@ const (
 	EventTypePayrollItemFailed              EventType = "payroll_item.failed"
 	EventTypePayrollItemAddressVerification EventType = "payroll_item.address_verification_sent"
 	EventTypePayrollItemAddressVerified     EventType = "payroll_item.address_verified"
+
+	// Subscription events
+	EventTypeSubscriptionCreated   EventType = "subscription.created"
+	EventTypeSubscriptionUpdated   EventType = "subscription.updated"
+	EventTypeSubscriptionDeleted   EventType = "subscription.deleted"
+	EventTypeSubscriptionPaused    EventType = "subscription.paused"
+	EventTypeSubscriptionResumed   EventType = "subscription.resumed"
+	EventTypeSubscriptionTrialWill EventType = "subscription.trial_will_end"
+
+	// Invoice events
+	EventTypeInvoiceCreated               EventType = "invoice.created"
+	EventTypeInvoiceFinalized             EventType = "invoice.finalized"
+	EventTypeInvoicePaid                  EventType = "invoice.paid"
+	EventTypeInvoicePaymentSucceeded      EventType = "invoice.payment_succeeded"
+	EventTypeInvoicePaymentFailed         EventType = "invoice.payment_failed"
+	EventTypeInvoicePaymentActionRequired EventType = "invoice.payment_action_required"
+	EventTypeInvoiceUpcoming              EventType = "invoice.upcoming"
+	EventTypeInvoiceUpdated               EventType = "invoice.updated"
+	EventTypeInvoiceVoided                EventType = "invoice.voided"
 )
 
 const (
-	EventObject         = "event"
+	// EventObject is the type identifier for event objects
+	EventObject = "event"
+	// MartianPaySignature is the HTTP header name for webhook signatures
 	MartianPaySignature = "Martian-Pay-Signature"
 )
 
+// EventData contains the data payload of a webhook event
 type EventData struct {
-	// Object is a raw mapping of the API resource contained in the event.
-	// Although marked with json:"-", it's still populated independently by
-	// a custom UnmarshalJSON implementation.
-	// Object containing the API resource relevant to the event.
+	// Object is a raw mapping of the API resource contained in the event
 	Object map[string]interface{} `json:"-"`
-	// Object containing the names of the updated attributes and their values prior to the event (only included in events of type `*.updated`). If an array attribute has any updated elements, this object contains the entire array.
+	// PreviousAttributes contains the names of updated attributes and their values prior to the event (only included in events of type `*.updated`)
 	PreviousAttributes map[string]interface{} `json:"previous_attributes"`
-	Raw                json.RawMessage        `json:"object"`
+	// Raw is the raw JSON data of the event object
+	Raw json.RawMessage `json:"object"`
 }
 
+// Event represents a webhook event sent to subscribed endpoints
 type Event struct {
-	ID         string `json:"id"`
-	Object     string `json:"object"`
+	// ID is the unique identifier for the event
+	ID string `json:"id"`
+	// Object is the type identifier, always "event"
+	Object string `json:"object"`
+	// APIVersion is the API version used for this event
 	APIVersion string `json:"api_version"`
-	// Time at which the object was created. Measured in seconds since the Unix epoch.
-	Created  int64      `json:"created"`
-	Data     *EventData `json:"data"`
-	Livemode bool       `json:"livemode"`
-	// Number of webhooks that haven't been successfully delivered (for example, to return a 20x response) to the URLs you specify.
+	// Created is the Unix timestamp when the event was created
+	Created int64 `json:"created"`
+	// Data contains the event payload
+	Data *EventData `json:"data"`
+	// Livemode indicates whether this event was created in live mode or test mode
+	Livemode bool `json:"livemode"`
+	// PendingWebhooks is the number of webhooks that haven't been successfully delivered
 	PendingWebhooks int64 `json:"pending_webhooks"`
-	// Information on the API request that triggers the event.
-	// Request *EventRequest `json:"request"`
-	// Description of the event (for example, `invoice.created` or `charge.refunded`).
+	// Type is the event type (e.g., "invoice.created" or "charge.refunded")
 	Type EventType `json:"type"`
 }
 

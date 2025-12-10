@@ -2,12 +2,21 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"time"
 
-	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
+	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
+
+// generatePayrollEmail generates a random email for payroll items
+func generatePayrollEmail(prefix string) string {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(1000000)
+	timestamp := time.Now().Unix()
+	return fmt.Sprintf("%s_%d_%d@example.com", prefix, timestamp, randomNum)
+}
 
 // Payroll Examples
 func createDirectPayroll(client *martianpay.Client) {
@@ -36,8 +45,15 @@ func createDirectPayroll(client *martianpay.Client) {
 		return
 	}
 
-	// Match assets with balance
-	var selectedCoin, selectedNetwork string
+	// Match assets with balance and let user choose
+	type AssetOption struct {
+		Coin             string
+		Network          string
+		AssetId          string
+		AvailableBalance string
+	}
+
+	var availableAssets []AssetOption
 	for _, asset := range cryptoAssets {
 		for _, detail := range balance.BalanceDetails {
 			if detail.Currency == asset.Id && detail.AvailableBalance != "0" && detail.AvailableBalance != "" {
@@ -46,39 +62,83 @@ func createDirectPayroll(client *martianpay.Client) {
 					continue
 				}
 				if availableFloat >= 0.1 {
-					selectedCoin = asset.Coin
-					selectedNetwork = asset.CryptoAssetParams.Network
-					fmt.Printf("  Selected: %s on %s (Balance: %s)\n", selectedCoin, selectedNetwork, detail.AvailableBalance)
-					break
+					availableAssets = append(availableAssets, AssetOption{
+						Coin:             asset.Coin,
+						Network:          asset.CryptoAssetParams.Network,
+						AssetId:          asset.Id,
+						AvailableBalance: detail.AvailableBalance,
+					})
 				}
 			}
 		}
-		if selectedCoin != "" {
-			break
-		}
 	}
 
-	if selectedCoin == "" {
+	if len(availableAssets) == 0 {
 		fmt.Println("  No sufficient balance found (>= 0.1)")
 		return
 	}
 
+	// Display available assets for user to choose
+	fmt.Println("\n  Available assets with sufficient balance:")
+	for i, option := range availableAssets {
+		fmt.Printf("  [%d] %s on %s (Balance: %s)\n", i+1, option.Coin, option.Network, option.AvailableBalance)
+	}
+
+	fmt.Print("\nSelect asset number: ")
+	var assetChoice int
+	fmt.Scanln(&assetChoice)
+	if assetChoice < 1 || assetChoice > len(availableAssets) {
+		fmt.Println("Invalid choice")
+		return
+	}
+
+	selectedAsset := availableAssets[assetChoice-1]
+	fmt.Printf("\n✓ Selected: %s on %s\n", selectedAsset.Coin, selectedAsset.Network)
+
+	// Ask user to input recipient address
+	fmt.Printf("\nEnter recipient address for %s on %s: ", selectedAsset.Coin, selectedAsset.Network)
+	var recipientAddress string
+	fmt.Scanln(&recipientAddress)
+	if recipientAddress == "" {
+		fmt.Println("Error: Address cannot be empty")
+		return
+	}
+
+	fmt.Printf("✓ Recipient address: %s\n", recipientAddress)
+
+	// Ask user to input amount
+	fmt.Printf("\nEnter amount to send (or press Enter for default 0.1): ")
+	var amountInput string
+	fmt.Scanln(&amountInput)
+	if amountInput == "" {
+		amountInput = "0.1"
+	}
+
+	// Validate amount
+	amountFloat, err := strconv.ParseFloat(amountInput, 64)
+	if err != nil || amountFloat <= 0 {
+		fmt.Println("Error: Invalid amount")
+		return
+	}
+
+	fmt.Printf("✓ Amount: %s\n", amountInput)
+
 	timestamp := time.Now().UnixNano()
 	externalID := fmt.Sprintf("ORDER-%d", timestamp)
 
-	req := martianpay.PayrollDirectCreateRequest{
+	req := &developer.PayrollDirectCreateRequest{
 		ExternalID:  externalID,
 		AutoApprove: true,
-		Items: []martianpay.PayrollDirectItem{
+		Items: []developer.PayrollDirectItem{
 			{
 				ExternalID:    fmt.Sprintf("ITEM-%d-001", timestamp),
 				Name:          "John Doe",
-				Email:         "john@example.com",
+				Email:         generatePayrollEmail("john"),
 				Phone:         "+1234567890",
-				Coin:          selectedCoin,
-				Network:       selectedNetwork,
-				Address:       "TN9RRaXkCFtTXRso2GdTZxSxxwufzxLQPP",
-				Amount:        "0.1",
+				Coin:          selectedAsset.Coin,
+				Network:       selectedAsset.Network,
+				Address:       recipientAddress,
+				Amount:        amountInput,
 				PaymentMethod: "normal",
 			},
 		},
@@ -107,7 +167,7 @@ func getPayroll(client *martianpay.Client) {
 		id = "payroll_example_id"
 	}
 
-	response, err := client.GetPayroll(martianpay.PayrollGetReq{ID: id})
+	response, err := client.GetPayroll(id)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -124,7 +184,7 @@ func getPayroll(client *martianpay.Client) {
 func listPayrolls(client *martianpay.Client) {
 	fmt.Println("Listing Payrolls...")
 
-	req := martianpay.PayrollListReq{
+	req := &developer.PayrollListRequest{
 		Page:     0,
 		PageSize: 10,
 	}
@@ -153,7 +213,7 @@ func listPayrollItems(client *martianpay.Client) {
 		payrollID = "payroll_example_id"
 	}
 
-	req := martianpay.PayrollItemsListReq{
+	req := &developer.PayrollItemsListRequest{
 		PayrollID: &payrollID,
 		Page:      0,
 		PageSize:  10,

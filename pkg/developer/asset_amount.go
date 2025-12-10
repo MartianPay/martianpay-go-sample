@@ -4,9 +4,12 @@ import "github.com/shopspring/decimal"
 
 // AssetAmount represents a cryptocurrency asset with its amount and decimal precision
 type AssetAmount struct {
-	AssetId       string          `json:"asset_id"` // Unique identifier for the asset/currency
-	Amount        decimal.Decimal `json:"amount"`   // Decimal amount of the asset
-	DecimalDigits int             `json:"-"`        // Number of decimal places for this asset (not serialized to JSON)
+	// AssetId is the unique identifier for the asset/currency
+	AssetId string `json:"asset_id"`
+	// Amount is the decimal amount of the asset
+	Amount decimal.Decimal `json:"amount"`
+	// DecimalDigits is the number of decimal places for this asset (not serialized to JSON)
+	DecimalDigits int `json:"-"`
 }
 
 func NewAssetAmount(amount decimal.Decimal, assetId string, decimals int) *AssetAmount {

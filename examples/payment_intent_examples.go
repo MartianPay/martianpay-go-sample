@@ -2,10 +2,20 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/MartianPay/martianpay-go-sample/pkg/developer"
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
+
+// generateOrderID generates a random merchant order ID
+func generateOrderID(prefix string) string {
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(1000000)
+	timestamp := time.Now().Unix()
+	return fmt.Sprintf("%s_%d_%d", prefix, timestamp, randomNum)
+}
 
 // Payment Intent Examples
 func createAndUpdatePaymentIntent(client *martianpay.Client) {
@@ -29,11 +39,11 @@ func createAndUpdatePaymentIntent(client *martianpay.Client) {
 	fmt.Println("Creating and Updating Payment Intent (Crypto)...")
 
 	description := "Test payment intent"
-	createReq := martianpay.PaymentIntentCreateRequest{
+	createReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
 			Amount:          "10.00",
 			Currency:        "USD",
-			MerchantOrderId: "order_123",
+			MerchantOrderId: generateOrderID("order"),
 			Description:     &description,
 		},
 	}
@@ -54,8 +64,7 @@ func createAndUpdatePaymentIntent(client *martianpay.Client) {
 	// NOTE: Skip this step if using MartianPay.js widget (widget handles it automatically)
 	paymentMethodType := developer.PaymentMethodTypeCrypto
 	assetId := "USDC-Ethereum-TEST"
-	updateReq := martianpay.PaymentIntentUpdateRequest{
-		ID:                createResp.ID,
+	updateReq := &developer.PaymentIntentUpdateRequest{
 		PaymentMethodType: &paymentMethodType,
 		PaymentMethodData: &developer.PaymentMethodConfirmOptions{
 			Crypto: &developer.CryptoOption{
@@ -64,7 +73,7 @@ func createAndUpdatePaymentIntent(client *martianpay.Client) {
 		},
 	}
 
-	updateResp, err := client.UpdatePaymentIntent(updateReq)
+	updateResp, err := client.UpdatePaymentIntent(createResp.ID, updateReq)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -97,8 +106,7 @@ func getPaymentIntent(client *martianpay.Client) {
 		id = "pi_example_id" // Default for demo
 	}
 
-	req := martianpay.PaymentIntentGetReq{ID: id}
-	response, err := client.GetPaymentIntent(req)
+	response, err := client.GetPaymentIntent(id)
 
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
@@ -115,11 +123,11 @@ func getPaymentIntent(client *martianpay.Client) {
 func listPaymentIntents(client *martianpay.Client) {
 	fmt.Println("Listing Payment Intents...")
 
-	email := "user@example.com"
-	req := martianpay.PaymentIntentListReq{
-		Page:          0,
-		PageSize:      10,
-		CustomerEmail: &email,
+	req := &developer.PaymentIntentListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
 	}
 
 	response, err := client.ListPaymentIntents(req)
@@ -142,11 +150,11 @@ func cancelPaymentIntent(client *martianpay.Client) {
 
 	// First create a payment intent to cancel
 	description := "Test payment intent for cancellation"
-	createReq := martianpay.PaymentIntentCreateRequest{
+	createReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
 			Amount:          "10.00",
 			Currency:        "USD",
-			MerchantOrderId: "order_cancel_test",
+			MerchantOrderId: generateOrderID("order_cancel"),
 			Description:     &description,
 		},
 	}
@@ -159,13 +167,11 @@ func cancelPaymentIntent(client *martianpay.Client) {
 
 	fmt.Printf("  Created Payment Intent: %s\n", createResp.ID)
 
-	reason := "Customer requested cancellation"
-	cancelReq := martianpay.PaymentIntentCancelReq{
-		ID:     createResp.ID,
-		Reason: &reason,
+	cancelReq := &developer.PaymentIntentCancelRequest{
+		Reason: developer.PaymentIntentCancellationReasonRequestedByCustomer,
 	}
 
-	cancelResp, err := client.CancelPaymentIntent(cancelReq)
+	cancelResp, err := client.CancelPaymentIntent(createResp.ID, cancelReq)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -183,9 +189,11 @@ func listPaymentIntentsWithPermanentDeposit(client *martianpay.Client) {
 	permanentDeposit := true
 	assetId := "USDC-Ethereum-TEST"
 
-	req := martianpay.PaymentIntentListReq{
-		Page:                    0,
-		PageSize:                10,
+	req := &developer.PaymentIntentListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
 		PermanentDeposit:        &permanentDeposit,
 		PermanentDepositAssetId: &assetId,
 	}
@@ -243,11 +251,13 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 	fmt.Println("Fiat Payment with New Card...")
 	fmt.Println("Note: This example shows the API-only approach with Stripe integration")
 
-	email := "fiat_test@example.com"
-	listCustomerReq := martianpay.CustomerListRequest{
-		Page:     0,
-		PageSize: 10,
-		Email:    &email,
+	email := generateRandomEmail("fiat_test")
+	listCustomerReq := &developer.CustomerListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
+		Email: &email,
 	}
 
 	listResp, err := client.ListCustomers(listCustomerReq)
@@ -263,7 +273,7 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 		fmt.Printf("✓ Step 1 - Using existing customer: %s\n", customerID)
 	} else {
 		name := "Fiat Test Customer"
-		createCustomerReq := martianpay.CustomerCreateRequest{
+		createCustomerReq := &developer.CustomerCreateRequest{
 			CustomerParams: developer.CustomerParams{
 				Email: &email,
 				Name:  &name,
@@ -281,11 +291,11 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 
 	// Step 2: Create a payment intent
 	description := "Test fiat payment with new card"
-	createPIReq := martianpay.PaymentIntentCreateRequest{
+	createPIReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
 			Amount:          "25.00",
 			Currency:        "USD",
-			MerchantOrderId: "order_fiat_new_card",
+			MerchantOrderId: generateOrderID("order_fiat_new_card"),
 			Description:     &description,
 			Customer:        &customerID,
 		},
@@ -308,8 +318,7 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 	currency := "USD"
 	savePaymentMethod := true // Save the card for future use (creates reusable payment method)
 
-	updatePIReq := martianpay.PaymentIntentUpdateRequest{
-		ID:                piResp.ID,
+	updatePIReq := &developer.PaymentIntentUpdateRequest{
 		PaymentMethodType: &paymentMethodType,
 		PaymentMethodData: &developer.PaymentMethodConfirmOptions{
 			Fiat: &developer.FiatOption{
@@ -321,7 +330,7 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 		},
 	}
 
-	updateResp, err := client.UpdatePaymentIntent(updatePIReq)
+	updateResp, err := client.UpdatePaymentIntent(piResp.ID, updatePIReq)
 	if err != nil {
 		fmt.Printf("✗ API Error updating payment intent: %v\n", err)
 		return
@@ -406,11 +415,7 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 	}
 
 	// Step 1: List customer's saved payment methods
-	pmListReq := martianpay.CustomerPaymentMethodListRequest{
-		CustomerID: customerID,
-	}
-
-	pmListResp, err := client.ListCustomerPaymentMethods(pmListReq)
+	pmListResp, err := client.ListCustomerPaymentMethods(customerID)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -429,11 +434,11 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 
 	// Step 2: Create a payment intent
 	description := "Test fiat payment with saved card"
-	createPIReq := martianpay.PaymentIntentCreateRequest{
+	createPIReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
 			Amount:          "15.00",
 			Currency:        "USD",
-			MerchantOrderId: "order_fiat_saved_card",
+			MerchantOrderId: generateOrderID("order_fiat_saved_card"),
 			Description:     &description,
 			Customer:        &customerID,
 		},
@@ -453,8 +458,11 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 	currency := "USD"
 	savedPaymentMethodID := pmListResp.PaymentMethods[0].ID // Use first saved card
 
-	updatePIReq := martianpay.PaymentIntentUpdateRequest{
-		ID:                piResp.ID,
+	fmt.Printf("\n✓ Step 2 - Preparing to charge saved card:\n")
+	fmt.Printf("  Currency: %s\n", currency)
+	fmt.Printf("  Payment Method ID: %s\n", savedPaymentMethodID)
+
+	updatePIReq := &developer.PaymentIntentUpdateRequest{
 		PaymentMethodType: &paymentMethodType,
 		PaymentMethodData: &developer.PaymentMethodConfirmOptions{
 			Fiat: &developer.FiatOption{
@@ -465,7 +473,7 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 		},
 	}
 
-	updateResp, err := client.UpdatePaymentIntent(updatePIReq)
+	updateResp, err := client.UpdatePaymentIntent(piResp.ID, updatePIReq)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
