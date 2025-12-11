@@ -41,7 +41,7 @@ func createAndUpdatePaymentIntent(client *martianpay.Client) {
 	description := "Test payment intent"
 	createReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
-			Amount:          "10.00",
+			Amount:          "0.10",
 			Currency:        "USD",
 			MerchantOrderId: generateOrderID("order"),
 			Description:     &description,
@@ -152,7 +152,7 @@ func cancelPaymentIntent(client *martianpay.Client) {
 	description := "Test payment intent for cancellation"
 	createReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
-			Amount:          "10.00",
+			Amount:          "0.10",
 			Currency:        "USD",
 			MerchantOrderId: generateOrderID("order_cancel"),
 			Description:     &description,
@@ -293,7 +293,7 @@ func fiatPaymentWithNewCard(client *martianpay.Client) {
 	description := "Test fiat payment with new card"
 	createPIReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
-			Amount:          "25.00",
+			Amount:          "1.00",
 			Currency:        "USD",
 			MerchantOrderId: generateOrderID("order_fiat_new_card"),
 			Description:     &description,
@@ -436,7 +436,7 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 	description := "Test fiat payment with saved card"
 	createPIReq := &developer.PaymentIntentCreateRequest{
 		PaymentIntentParams: developer.PaymentIntentParams{
-			Amount:          "15.00",
+			Amount:          "1.00",
 			Currency:        "USD",
 			MerchantOrderId: generateOrderID("order_fiat_saved_card"),
 			Description:     &description,
