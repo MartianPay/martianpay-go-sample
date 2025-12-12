@@ -286,6 +286,8 @@ type PaymentIntent struct {
 	Charges []*Charge `json:"charges"`
 	// ReceiptEmail is the email address to send the receipt to
 	ReceiptEmail string `json:"receipt_email"`
+	// ReturnURL is the URL to redirect the customer to after payment
+	ReturnURL string `json:"return_url"`
 	// Status is the current status of the payment intent
 	Status string `json:"status"`
 	// ProcessingStatus is the internal processing status of the payment intent

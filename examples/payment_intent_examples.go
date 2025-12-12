@@ -98,12 +98,59 @@ func createAndUpdatePaymentIntent(client *martianpay.Client) {
 
 func getPaymentIntent(client *martianpay.Client) {
 	fmt.Println("Getting Payment Intent...")
-	fmt.Print("Enter Payment Intent ID: ")
+	fmt.Println("  Fetching payment intents...")
+
+	// List payment intents first
+	listReq := &developer.PaymentIntentListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
+	}
+	listResp, err := client.ListPaymentIntents(listReq)
+	if err == nil && len(listResp.PaymentIntents) > 0 {
+		fmt.Printf("\n  Recent Payment Intents:\n")
+		for i, pi := range listResp.PaymentIntents {
+			fmt.Printf("  [%d] ID: %s - %s", i+1, pi.ID, pi.Status)
+			if pi.Amount != nil {
+				fmt.Printf(" - %s %s", pi.Amount.Amount, pi.Amount.AssetId)
+			}
+			fmt.Println()
+		}
+		fmt.Print("\nEnter payment intent number or ID: ")
+	} else {
+		fmt.Print("\nEnter Payment Intent ID: ")
+	}
+
+	var choice string
+	fmt.Scanln(&choice)
 
 	var id string
-	fmt.Scanln(&id)
-	if id == "" {
-		id = "pi_example_id" // Default for demo
+	if choice != "" && listResp != nil && len(listResp.PaymentIntents) > 0 {
+		// Try to find by ID first
+		foundByID := false
+		for _, pi := range listResp.PaymentIntents {
+			if pi.ID == choice {
+				id = choice
+				foundByID = true
+				break
+			}
+		}
+		// If not found by ID, try as number
+		if !foundByID {
+			var idx int
+			fmt.Sscanf(choice, "%d", &idx)
+			if idx > 0 && idx <= len(listResp.PaymentIntents) {
+				id = listResp.PaymentIntents[idx-1].ID
+			}
+		}
+		if id == "" {
+			id = choice
+		}
+	} else if choice != "" {
+		id = choice
+	} else {
+		id = "pi_example_id"
 	}
 
 	response, err := client.GetPaymentIntent(id)
@@ -491,4 +538,446 @@ func fiatPaymentWithSavedCard(client *martianpay.Client) {
 	fmt.Printf("    - Widget handles UpdatePaymentIntent for you\n")
 	fmt.Printf("    - No backend UpdatePaymentIntent call needed\n")
 	fmt.Printf("    - Docs: https://docs.martianpay.com/v1/docs/martianpay-js-usage\n")
+}
+
+// createPaymentIntentWithPaymentLink creates a payment intent using a payment link
+func createPaymentIntentWithPaymentLink(client *martianpay.Client) {
+	fmt.Println("Creating Payment Intent with Payment Link...")
+	fmt.Println("This example creates a payment intent from a payment link with variant and subscription")
+
+	// Step 1: List payment links
+	fmt.Println("\n  Step 1 - Fetching payment links...")
+	plReq := &developer.PaymentLinkListRequest{
+		Page:     0,
+		PageSize: 10,
+	}
+	plResp, err := client.ListPaymentLinks(plReq)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	if len(plResp.PaymentLinks) == 0 {
+		fmt.Println("✗ No payment links found. Please create one first.")
+		return
+	}
+
+	// Categorize payment links: with selling plan vs without
+	var withSellingPlan []*developer.PaymentLink
+	var withoutSellingPlan []*developer.PaymentLink
+
+	for _, link := range plResp.PaymentLinks {
+		hasSellingPlan := false
+		if link.Product != nil && len(link.Product.SellingPlanGroups) > 0 {
+			hasSellingPlan = true
+		}
+
+		if hasSellingPlan {
+			withSellingPlan = append(withSellingPlan, link)
+		} else {
+			withoutSellingPlan = append(withoutSellingPlan, link)
+		}
+	}
+
+	fmt.Printf("\n  Available Payment Links:\n")
+
+	// Display payment links with selling plans first
+	if len(withSellingPlan) > 0 {
+		fmt.Printf("\n  📅 With Subscription Plans:\n")
+		for i, link := range withSellingPlan {
+			fmt.Printf("  [%d] ", i+1)
+			if link.Product != nil {
+				fmt.Printf("%s", link.Product.Name)
+			}
+			fmt.Printf(" (ID: %s)\n", link.ID)
+			if link.PriceRange != nil && link.PriceRange.Min != nil {
+				fmt.Printf("      Price: %s %s", link.PriceRange.Min.Amount, link.PriceRange.Min.AssetId)
+				if link.PriceRange.Max != nil && link.PriceRange.Max.Amount != link.PriceRange.Min.Amount {
+					fmt.Printf(" - %s %s", link.PriceRange.Max.Amount, link.PriceRange.Max.AssetId)
+				}
+				fmt.Println()
+			}
+			if link.Product != nil && len(link.Product.SellingPlanGroups) > 0 {
+				fmt.Printf("      Plans: %d selling plan group(s)\n", len(link.Product.SellingPlanGroups))
+			}
+		}
+	}
+
+	// Display payment links without selling plans
+	if len(withoutSellingPlan) > 0 {
+		fmt.Printf("\n  💳 One-Time Payment:\n")
+		startIdx := len(withSellingPlan)
+		for i, link := range withoutSellingPlan {
+			fmt.Printf("  [%d] ", startIdx+i+1)
+			if link.Product != nil {
+				fmt.Printf("%s", link.Product.Name)
+			}
+			fmt.Printf(" (ID: %s)\n", link.ID)
+			if link.PriceRange != nil && link.PriceRange.Min != nil {
+				fmt.Printf("      Price: %s %s", link.PriceRange.Min.Amount, link.PriceRange.Min.AssetId)
+				if link.PriceRange.Max != nil && link.PriceRange.Max.Amount != link.PriceRange.Min.Amount {
+					fmt.Printf(" - %s %s", link.PriceRange.Max.Amount, link.PriceRange.Max.AssetId)
+				}
+				fmt.Println()
+			}
+		}
+	}
+
+	// Rebuild full list in display order for selection
+	allLinks := append(withSellingPlan, withoutSellingPlan...)
+
+	fmt.Print("\nEnter payment link number (or press Enter for first): ")
+	var linkChoice string
+	fmt.Scanln(&linkChoice)
+
+	selectedIdx := 0
+	if linkChoice != "" {
+		var idx int
+		fmt.Sscanf(linkChoice, "%d", &idx)
+		if idx > 0 && idx <= len(allLinks) {
+			selectedIdx = idx - 1
+		}
+	}
+
+	selectedLink := allLinks[selectedIdx]
+	fmt.Printf("  Selected: %s\n", selectedLink.ID)
+
+	// Step 2: Get payment link details to show variants
+	fmt.Println("\n  Step 2 - Getting payment link details...")
+	linkDetails, err := client.GetPaymentLink(selectedLink.ID)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	if len(linkDetails.PrimaryVariants) == 0 {
+		fmt.Println("✗ No variants found in this payment link")
+		return
+	}
+
+	// Step 3: Select variant
+	fmt.Printf("\n  Available Variants:\n")
+	for i, pv := range linkDetails.PrimaryVariants {
+		fmt.Printf("  [%d] Variant ID: %s\n", i+1, pv.VariantID)
+		if pv.Variant != nil {
+			fmt.Printf("      Options: ")
+			for optName, optValue := range pv.Variant.OptionValues {
+				fmt.Printf("%s=%s ", optName, optValue)
+			}
+			fmt.Println()
+			if pv.Variant.Price != nil {
+				fmt.Printf("      Price: %s %s\n", pv.Variant.Price.Amount, pv.Variant.Price.AssetId)
+			}
+		}
+	}
+
+	fmt.Print("\nEnter variant number (or press Enter for first): ")
+	var variantChoice string
+	fmt.Scanln(&variantChoice)
+
+	selectedVariantIdx := 0
+	if variantChoice != "" {
+		var idx int
+		fmt.Sscanf(variantChoice, "%d", &idx)
+		if idx > 0 && idx <= len(linkDetails.PrimaryVariants) {
+			selectedVariantIdx = idx - 1
+		}
+	}
+
+	selectedVariant := linkDetails.PrimaryVariants[selectedVariantIdx]
+	fmt.Printf("  Selected Variant: %s\n", selectedVariant.VariantID)
+
+	// Step 4: Check for selling plans
+	var sellingPlanID *string
+	if linkDetails.Product != nil && len(linkDetails.Product.SellingPlanGroups) > 0 {
+		fmt.Printf("\n  This product has selling plans (subscriptions)\n")
+
+		// Build a flat list of all selling plans for easy selection
+		type PlanChoice struct {
+			ID          string
+			Name        string
+			GroupName   string
+			Interval    string
+			IntervalCnt string
+			Policies    []developer.PricingPolicyItem
+		}
+		var allPlans []PlanChoice
+
+		for _, spg := range linkDetails.Product.SellingPlanGroups {
+			fmt.Printf("\n  Selling Plan Group: %s\n", spg.Name)
+			if len(spg.SellingPlans) > 0 {
+				for _, sp := range spg.SellingPlans {
+					allPlans = append(allPlans, PlanChoice{
+						ID:          sp.ID,
+						Name:        sp.Name,
+						GroupName:   spg.Name,
+						Interval:    sp.BillingPolicy.Interval,
+						IntervalCnt: sp.BillingPolicy.IntervalCount,
+						Policies:    sp.PricingPolicy,
+					})
+
+					fmt.Printf("    [%d] ID: %s\n", len(allPlans), sp.ID)
+					fmt.Printf("        Name: %s\n", sp.Name)
+					fmt.Printf("        Billing: Every %s %s\n",
+						sp.BillingPolicy.IntervalCount,
+						sp.BillingPolicy.Interval)
+					if len(sp.PricingPolicy) > 0 {
+						fmt.Printf("        Discounts:\n")
+						for _, policy := range sp.PricingPolicy {
+							fmt.Printf("          - %s%% off (%s)\n",
+								policy.AdjustmentValue,
+								policy.PolicyType)
+						}
+					}
+				}
+			}
+		}
+
+		fmt.Print("\nEnter selling plan number or ID (or press Enter to skip): ")
+		var spChoice string
+		fmt.Scanln(&spChoice)
+
+		if spChoice != "" {
+			// Try to find by ID first
+			foundByID := false
+			for _, plan := range allPlans {
+				if plan.ID == spChoice {
+					sellingPlanID = &spChoice
+					foundByID = true
+					fmt.Printf("  Selected: %s (%s)\n", plan.Name, plan.ID)
+					break
+				}
+			}
+
+			// If not found by ID, try as number
+			if !foundByID {
+				var idx int
+				fmt.Sscanf(spChoice, "%d", &idx)
+				if idx > 0 && idx <= len(allPlans) {
+					sellingPlanID = &allPlans[idx-1].ID
+					fmt.Printf("  Selected: %s (%s)\n", allPlans[idx-1].Name, allPlans[idx-1].ID)
+				} else {
+					// Still treat as ID even if not found in list
+					sellingPlanID = &spChoice
+					fmt.Printf("  Using ID: %s\n", spChoice)
+				}
+			}
+		}
+	}
+
+	// Step 5: Get quantity
+	fmt.Print("\nEnter quantity [1]: ")
+	var qtyStr string
+	fmt.Scanln(&qtyStr)
+	quantity := 1
+	if qtyStr != "" {
+		fmt.Sscanf(qtyStr, "%d", &quantity)
+	}
+
+	// Step 6: Get shipping address
+	fmt.Println("\n  Step 3 - Shipping Address:")
+	fmt.Print("Country [US]: ")
+	var country string
+	fmt.Scanln(&country)
+	if country == "" {
+		country = "US"
+	}
+
+	fmt.Print("Line1 [123 Main St]: ")
+	var line1 string
+	fmt.Scanln(&line1)
+	if line1 == "" {
+		line1 = "123 Main St"
+	}
+
+	fmt.Print("City [New York]: ")
+	var city string
+	fmt.Scanln(&city)
+	if city == "" {
+		city = "New York"
+	}
+
+	fmt.Print("State [NY]: ")
+	var state string
+	fmt.Scanln(&state)
+	if state == "" {
+		state = "NY"
+	}
+
+	fmt.Print("Postal Code [10001]: ")
+	var postalCode string
+	fmt.Scanln(&postalCode)
+	if postalCode == "" {
+		postalCode = "10001"
+	}
+
+	// Step 7: Get customer ID
+	fmt.Println("\n  Step 7 - Select Customer (optional):")
+	fmt.Println("  Fetching customers...")
+
+	custReq := &developer.CustomerListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
+	}
+	custResp, err := client.ListCustomers(custReq)
+	if err == nil && len(custResp.Customers) > 0 {
+		fmt.Printf("\n  Available Customers:\n")
+		for i, cust := range custResp.Customers {
+			fmt.Printf("  [%d] ID: %s", i+1, cust.ID)
+			if cust.Email != nil && *cust.Email != "" {
+				fmt.Printf(" - %s", *cust.Email)
+			}
+			if cust.Name != nil && *cust.Name != "" {
+				fmt.Printf(" (%s)", *cust.Name)
+			}
+			fmt.Println()
+		}
+		fmt.Print("\nEnter customer number or ID (or press Enter to skip): ")
+	} else {
+		fmt.Print("\nEnter Customer ID (or press Enter to skip): ")
+	}
+
+	var customerChoice string
+	fmt.Scanln(&customerChoice)
+
+	var customerID string
+	if customerChoice != "" && custResp != nil && len(custResp.Customers) > 0 {
+		// Try to find by ID first
+		foundByID := false
+		for _, cust := range custResp.Customers {
+			if cust.ID == customerChoice {
+				customerID = cust.ID
+				foundByID = true
+				break
+			}
+		}
+		// If not found by ID, try as number
+		if !foundByID {
+			var idx int
+			fmt.Sscanf(customerChoice, "%d", &idx)
+			if idx > 0 && idx <= len(custResp.Customers) {
+				customerID = custResp.Customers[idx-1].ID
+			}
+		}
+		if customerID == "" {
+			customerID = customerChoice
+		}
+	} else if customerChoice != "" {
+		customerID = customerChoice
+	}
+
+	if customerID != "" {
+		fmt.Printf("  Selected Customer: %s\n", customerID)
+	}
+
+	// Step 8: Get receipt email
+	fmt.Print("Enter Receipt Email: ")
+	var receiptEmail string
+	fmt.Scanln(&receiptEmail)
+
+	// Step 9: Get merchant order ID
+	merchantOrderID := generateOrderID("order")
+	fmt.Printf("Generated Merchant Order ID: %s\n", merchantOrderID)
+	fmt.Print("Press Enter to use this, or enter custom order ID: ")
+	var customOrderID string
+	fmt.Scanln(&customOrderID)
+	if customOrderID != "" {
+		merchantOrderID = customOrderID
+	}
+
+	// Step 10: Get metadata
+	fmt.Println("\n  Metadata (key-value pairs):")
+	fmt.Print("Enter number of metadata entries [0]: ")
+	var metadataCountStr string
+	fmt.Scanln(&metadataCountStr)
+	metadataCount := 0
+	if metadataCountStr != "" {
+		fmt.Sscanf(metadataCountStr, "%d", &metadataCount)
+	}
+
+	metadata := make(map[string]string)
+	for i := 0; i < metadataCount; i++ {
+		fmt.Printf("  Entry %d:\n", i+1)
+		fmt.Print("    Key: ")
+		var key string
+		fmt.Scanln(&key)
+		fmt.Print("    Value: ")
+		var value string
+		fmt.Scanln(&value)
+		if key != "" {
+			metadata[key] = value
+		}
+	}
+
+	// Step 11: Create payment intent
+	fmt.Println("\n  Step 11 - Creating Payment Intent...")
+
+	req := &developer.PaymentIntentCreateRequest{
+		PaymentIntentParams: developer.PaymentIntentParams{
+			MerchantOrderId: merchantOrderID,
+			ReceiptEmail:    receiptEmail,
+			Metadata:        metadata,
+		},
+		PaymentLinkID: &selectedLink.ID,
+		PrimaryVariant: &developer.VariantSelectionRequest{
+			VariantID:     selectedVariant.VariantID,
+			Quantity:      quantity,
+			SellingPlanID: sellingPlanID,
+		},
+		Addons: []developer.VariantSelectionRequest{},
+		ShippingAddress: &developer.PaymentIntentShippingAddress{
+			Country:    country,
+			State:      &state,
+			City:       city,
+			Line1:      line1,
+			PostalCode: postalCode,
+		},
+	}
+
+	if customerID != "" {
+		req.Customer = &customerID
+	}
+
+	if linkDetails.Product != nil {
+		req.Description = &linkDetails.Product.Name
+		if linkDetails.Product.Version > 0 {
+			req.ProductVersion = &linkDetails.Product.Version
+		}
+	}
+
+	response, err := client.CreatePaymentIntent(req)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\n✓ Payment Intent Created:\n")
+	fmt.Printf("  ID: %s\n", response.ID)
+	fmt.Printf("  Status: %s\n", response.Status)
+	fmt.Printf("  Merchant Order ID: %s\n", response.MerchantOrderId)
+	if response.Amount != nil {
+		fmt.Printf("  Amount: %s %s\n", response.Amount.Amount, response.Amount.AssetId)
+	}
+	if response.ClientSecret != "" {
+		fmt.Printf("  Client Secret: %s\n", response.ClientSecret)
+	}
+	if sellingPlanID != nil {
+		fmt.Printf("  Subscription: Yes (Selling Plan ID: %s)\n", *sellingPlanID)
+	}
+	if response.Subscription != nil {
+		fmt.Printf("  Subscription ID: %s\n", *response.Subscription)
+	}
+	if len(metadata) > 0 {
+		fmt.Printf("  Metadata: %d entries\n", len(metadata))
+		for k, v := range metadata {
+			fmt.Printf("    %s: %s\n", k, v)
+		}
+	}
+
+	fmt.Printf("\n  💡 Next Steps:\n")
+	fmt.Printf("  • Use MartianPay.js Widget with client_secret: %s\n", response.ClientSecret)
+	fmt.Printf("  • Widget URL: https://docs.martianpay.com/v1/docs/martianpay-js-usage\n")
+	fmt.Printf("  • Customer will select payment method in the widget\n")
 }

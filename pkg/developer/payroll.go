@@ -264,12 +264,14 @@ type PayrollValidation struct {
 	NetworkValid bool `json:"network_valid"`
 	// AddressValid indicates whether the wallet address is valid
 	AddressValid bool `json:"address_valid"`
+	// PaymentMethodValid indicates whether the payment method is valid (must be "normal" or "binance")
+	PaymentMethodValid bool `json:"payment_method_valid"`
 	// BalanceEnough indicates whether there's enough balance to complete the payment
 	BalanceEnough bool `json:"balance_enough"`
 }
 
 func (p *PayrollValidation) IsWalletInfoValid() bool {
-	return p.AmountValid && p.CoinValid && p.NetworkValid && p.AddressValid
+	return p.AmountValid && p.CoinValid && p.NetworkValid && p.AddressValid && p.PaymentMethodValid
 }
 
 // PayrollDifferenceField represents a single field's change in a payroll item

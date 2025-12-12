@@ -1,5 +1,3 @@
-github.com/MartianPay/martianpay-go-sample v0.0.0-20251210205325-e03d0adcadba h1:KJPSehIktsjMTxHmGLXPL2HfV1XF4oCA/ekEf53+uRI=
-github.com/MartianPay/martianpay-go-sample v0.0.0-20251210205325-e03d0adcadba/go.mod h1:njOr/MUdfPJ3SOtS+hrskOuohrrBGLqThPCgrB9VX0A=
 github.com/bytedance/gopkg v0.1.3 h1:TPBSwH8RsouGCBcMBktLt1AymVo2TVsBVCY4b6TnZ/M=
 github.com/bytedance/gopkg v0.1.3/go.mod h1:576VvJ+eJgyCzdjS+c4+77QF3p7ubbtiKARP3TxducM=
 github.com/bytedance/sonic v1.14.2 h1:k1twIoe97C1DtYUo+fZQy865IuHia4PR5RPiuGPPIIE=

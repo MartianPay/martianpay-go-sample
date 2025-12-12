@@ -141,6 +141,9 @@ type CustomerResolveResponse struct {
 	// OrderID tracks the merchant order ID associated with this authentication
 	OrderID *string `json:"order_id,omitempty" example:"ord_abc123"`
 
+	// ReturnURL is the URL to redirect the customer (from ephemeral token)
+	ReturnURL *string `json:"return_url,omitempty" example:"https://example.com/payment/success"`
+
 	// AuthToken contains the authentication token for session management (only issued when refresh_token=true)
 	AuthToken *CustomerAuthToken `json:"auth_token,omitempty"`
 
@@ -256,6 +259,10 @@ type EphemeralTokenRequest struct {
 	// IssuedBy identifies the system or service issuing this token request
 	// Used for audit logging and tracking token origin
 	IssuedBy *string `json:"issued_by,omitempty" example:"instagram_commerce_bot"`
+
+	// ReturnURL is the URL to redirect the customer after authentication/payment
+	// Used in social media integrations where the flow needs to return to a specific page
+	ReturnURL *string `json:"return_url,omitempty" example:"https://example.com/payment/success"`
 
 	// OrderID is an optional order identifier to associate with this ephemeral token
 	// When provided, this order_id will be returned when the token is resolved

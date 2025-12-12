@@ -131,8 +131,11 @@ func (c *Client) sendRequest(method, path string, body interface{}, response int
 		return fmt.Errorf("API error: %s", commonResp.Msg)
 	}
 
-	if err := json.Unmarshal(commonResp.Data, response); err != nil {
-		return fmt.Errorf("error unmarshaling data: %v", err)
+	// Skip unmarshaling if response is nil (e.g., for DELETE operations)
+	if response != nil {
+		if err := json.Unmarshal(commonResp.Data, response); err != nil {
+			return fmt.Errorf("error unmarshaling data: %v", err)
+		}
 	}
 
 	return nil
@@ -251,8 +254,11 @@ func (c *Client) sendRequestWithQuery(method, path string, params interface{}, r
 		return fmt.Errorf("API error: %s", commonResp.Msg)
 	}
 
-	if err := json.Unmarshal(commonResp.Data, response); err != nil {
-		return fmt.Errorf("error unmarshaling data: %v", err)
+	// Skip unmarshaling if response is nil (e.g., for DELETE operations)
+	if response != nil {
+		if err := json.Unmarshal(commonResp.Data, response); err != nil {
+			return fmt.Errorf("error unmarshaling data: %v", err)
+		}
 	}
 
 	return nil

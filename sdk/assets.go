@@ -13,13 +13,13 @@ func (c *Client) ListAssets() (*developer.AssetListResponse, error) {
 }
 
 // GetAllAssets gets all available assets
-func (c *Client) GetAllAssets() (*developer.AssetListResponse, error) {
-	var response developer.AssetListResponse
+func (c *Client) GetAllAssets() ([]*developer.Asset, error) {
+	var response []*developer.Asset
 	err := c.sendRequest("GET", "/v1/assets/all", nil, &response)
 	if err != nil {
 		return nil, err
 	}
-	return &response, nil
+	return response, nil
 }
 
 // ListAssetFees lists asset network fees

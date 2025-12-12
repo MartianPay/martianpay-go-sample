@@ -17,8 +17,8 @@ func (c *Client) ListPaymentLinks(params *developer.PaymentLinkListRequest) (*de
 }
 
 // CreatePaymentLink creates a payment link
-func (c *Client) CreatePaymentLink(params *developer.PaymentLinkCreateRequest) (*developer.PaymentLinkDetails, error) {
-	var resp developer.PaymentLinkDetails
+func (c *Client) CreatePaymentLink(params *developer.PaymentLinkCreateRequest) (*developer.PaymentLink, error) {
+	var resp developer.PaymentLink
 	err := c.sendRequest("POST", "/v1/payment_links", params, &resp)
 	if err != nil {
 		return nil, err
@@ -27,9 +27,9 @@ func (c *Client) CreatePaymentLink(params *developer.PaymentLinkCreateRequest) (
 }
 
 // GetPaymentLink retrieves payment link details
-func (c *Client) GetPaymentLink(linkID string) (*developer.PaymentLinkDetails, error) {
+func (c *Client) GetPaymentLink(linkID string) (*developer.PaymentLink, error) {
 	path := fmt.Sprintf("/v1/payment_links/%s", linkID)
-	var resp developer.PaymentLinkDetails
+	var resp developer.PaymentLink
 	err := c.sendRequest("GET", path, nil, &resp)
 	if err != nil {
 		return nil, err
@@ -38,9 +38,9 @@ func (c *Client) GetPaymentLink(linkID string) (*developer.PaymentLinkDetails, e
 }
 
 // UpdatePaymentLink updates payment link active status
-func (c *Client) UpdatePaymentLink(linkID string, params *developer.PaymentLinkUpdateRequest) (*developer.PaymentLinkDetails, error) {
+func (c *Client) UpdatePaymentLink(linkID string, params *developer.PaymentLinkUpdateRequest) (*developer.PaymentLink, error) {
 	path := fmt.Sprintf("/v1/payment_links/%s", linkID)
-	var resp developer.PaymentLinkDetails
+	var resp developer.PaymentLink
 	err := c.sendRequest("POST", path, params, &resp)
 	if err != nil {
 		return nil, err

@@ -64,11 +64,61 @@ func createAndUpdateCustomer(client *martianpay.Client) {
 
 func getCustomer(client *martianpay.Client) {
 	fmt.Println("Getting Customer...")
-	fmt.Print("Enter Customer ID: ")
+	fmt.Println("  Fetching customers...")
+
+	// List customers first
+	listReq := &developer.CustomerListRequest{
+		Pagination: developer.Pagination{
+			Page:     0,
+			PageSize: 10,
+		},
+	}
+	listResp, err := client.ListCustomers(listReq)
+	if err == nil && len(listResp.Customers) > 0 {
+		fmt.Printf("\n  Available Customers:\n")
+		for i, cust := range listResp.Customers {
+			fmt.Printf("  [%d] ID: %s", i+1, cust.ID)
+			if cust.Email != nil {
+				fmt.Printf(" - %s", *cust.Email)
+			}
+			if cust.Name != nil {
+				fmt.Printf(" (%s)", *cust.Name)
+			}
+			fmt.Println()
+		}
+		fmt.Print("\nEnter customer number or ID: ")
+	} else {
+		fmt.Print("\nEnter Customer ID: ")
+	}
+
+	var choice string
+	fmt.Scanln(&choice)
 
 	var id string
-	fmt.Scanln(&id)
-	if id == "" {
+	if choice != "" && listResp != nil && len(listResp.Customers) > 0 {
+		// Try to find by ID first
+		foundByID := false
+		for _, cust := range listResp.Customers {
+			if cust.ID == choice {
+				id = choice
+				foundByID = true
+				break
+			}
+		}
+		// If not found by ID, try as number
+		if !foundByID {
+			var idx int
+			fmt.Sscanf(choice, "%d", &idx)
+			if idx > 0 && idx <= len(listResp.Customers) {
+				id = listResp.Customers[idx-1].ID
+			}
+		}
+		if id == "" {
+			id = choice
+		}
+	} else if choice != "" {
+		id = choice
+	} else {
 		id = "cus_example_id"
 	}
 
