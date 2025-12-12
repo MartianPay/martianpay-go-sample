@@ -76,18 +76,42 @@ func createProductWithVariants(client *martianpay.Client) {
 			Name: "Color",
 			// SortOrder: 0 (default, first option)
 			Values: []*developer.ProductOptionValue{
-				{Value: "Black"}, // SortOrder: 0 (default)
-				{Value: "White", SortOrder: 1},
-				{Value: "Blue", SortOrder: 2},
+				{
+					Value:     "Black",
+					SortOrder: 0,
+					Swatch:    &developer.ProductOptionSwatch{Type: "color", Value: "#000000"},
+				},
+				{
+					Value:     "White",
+					SortOrder: 1,
+					Swatch:    &developer.ProductOptionSwatch{Type: "color", Value: "#FFFFFF"},
+				},
+				{
+					Value:     "Blue",
+					SortOrder: 2,
+					Swatch:    &developer.ProductOptionSwatch{Type: "color", Value: "#0000FF"},
+				},
 			},
 		},
 		{
 			Name:      "Size",
 			SortOrder: 1, // Second option
 			Values: []*developer.ProductOptionValue{
-				{Value: "Small"}, // SortOrder: 0 (default)
-				{Value: "Medium", SortOrder: 1},
-				{Value: "Large", SortOrder: 2},
+				{
+					Value:     "Small",
+					SortOrder: 0,
+					Swatch:    &developer.ProductOptionSwatch{Type: "text"},
+				},
+				{
+					Value:     "Medium",
+					SortOrder: 1,
+					Swatch:    &developer.ProductOptionSwatch{Type: "text"},
+				},
+				{
+					Value:     "Large",
+					SortOrder: 2,
+					Swatch:    &developer.ProductOptionSwatch{Type: "text"},
+				},
 			},
 		},
 	}
@@ -267,8 +291,16 @@ func createProductWithSellingPlan(client *martianpay.Client) {
 		{
 			Name: "Tier",
 			Values: []*developer.ProductOptionValue{
-				{Value: "Basic"},
-				{Value: "Premium", SortOrder: 1},
+				{
+					Value:     "Basic",
+					SortOrder: 0,
+					Swatch:    &developer.ProductOptionSwatch{Type: "text"},
+				},
+				{
+					Value:     "Premium",
+					SortOrder: 1,
+					Swatch:    &developer.ProductOptionSwatch{Type: "text"},
+				},
 			},
 		},
 	}
