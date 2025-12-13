@@ -10,13 +10,18 @@ Official Go SDK for the MartianPay payment platform.
 - **Customers**: Create, update, retrieve, list, and delete customers
 - **Payment Methods**: List customer's saved payment methods (cards)
 - **Refunds**: Create, retrieve, and list refunds
-- **Payroll**: Create direct payroll, retrieve, and list payrolls and payroll items
+- **Payroll**: Create direct payroll (normal and Binance), retrieve, and list payrolls and payroll items
+- **Payout**: Preview, create, retrieve, list, approve, reject, and cancel payouts with approval workflow
 - **Merchant Addresses (Wallets)**: Add, verify, update, list, and delete blockchain addresses for withdrawals
-- **Assets**: List all available crypto and fiat assets with network details
-- **Balance**: Query merchant balance across different currencies and assets
+- **Assets**: List enabled and available crypto and fiat assets with network details and fees
+- **Balance**: Query merchant balance across different currencies and assets, with detailed breakdown
+- **Products**: Create, update, retrieve, list, and delete products with variants and selling plans
+- **Selling Plans**: Manage subscription and recurring payment plans with pricing strategies
+- **Payment Links**: Create, update, retrieve, list, and delete payment links for products
+- **Subscriptions**: Manage customer subscriptions, pause, resume, and cancel subscriptions
 - **Crypto Payments**: Support for crypto payment methods (USDT, USDC, ETH, etc.)
 - **Fiat/Card Payments**: Support for card payments via Stripe (new card and saved card)
-- **Webhook Events**: Receive and verify webhook events
+- **Webhook Events**: Receive and verify webhook events for real-time updates
 
 ## Installation
 
@@ -109,12 +114,18 @@ make run
 ```
 
 Select from organized categories:
-1. **Payment Intent Examples** - Create, update, list, cancel payment intents
+1. **Payment Intent Examples** - Create, update, list, cancel payment intents with crypto and card payments
 2. **Customer Examples** - Manage customers and payment methods
 3. **Refund Examples** - Process and manage refunds
-4. **Payroll Examples** - Create and manage crypto payrolls
+4. **Payroll Examples** - Create and manage crypto payrolls (normal and Binance)
 5. **Merchant Address Examples** - Add and verify withdrawal addresses
-6. **Webhook Examples** - Test webhook event handling
+6. **Payout Examples** - Preview, create, approve, reject, and manage payouts
+7. **Assets Examples** - Query available crypto and fiat assets with network fees
+8. **Balance Examples** - View merchant balances across currencies and asset types
+9. **Product Examples** - Create and manage products with variants and selling plans
+10. **Payment Link Examples** - Create and manage payment links for products
+11. **Subscription Examples** - Manage customer subscriptions and recurring payments
+12. **Webhook Examples** - Test webhook event handling for real-time updates
 
 ## Keeping SDK Up to Date
 

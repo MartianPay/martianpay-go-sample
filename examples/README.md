@@ -63,7 +63,13 @@ Select a category:
 3. **Refund Examples**
 4. **Payroll Examples**
 5. **Merchant Address Examples**
-6. **Webhook Examples**
+6. **Payout Examples**
+7. **Assets Examples**
+8. **Balance Examples**
+9. **Product Examples**
+10. **Payment Link Examples**
+11. **Subscription Examples**
+12. **Webhook Examples**
 
 ### Submenu (Level 2)
 After selecting a category, you'll see specific examples:
@@ -76,6 +82,7 @@ After selecting a category, you'll see specific examples:
 5. List Payment Intents with Permanent Deposit
 6. Fiat Payment with New Card
 7. Fiat Payment with Saved Card
+8. Create Payment Intent with Payment Link
 
 **Customer Examples:**
 1. Create and Update Customer
@@ -90,10 +97,11 @@ After selecting a category, you'll see specific examples:
 3. List Refunds
 
 **Payroll Examples:**
-1. Create Direct Payroll
-2. Get Payroll
-3. List Payrolls
-4. List Payroll Items
+1. Create Direct Payroll (Normal Payment)
+2. Create Direct Payroll (Binance Payment)
+3. Get Payroll
+4. List Payrolls
+5. List Payroll Items
 
 **Merchant Address Examples:**
 1. Create Merchant Address
@@ -104,6 +112,71 @@ After selecting a category, you'll see specific examples:
 6. List Merchant Addresses by Network
 7. Delete Merchant Address
 8. Create and Verify Merchant Address (Full Workflow)
+
+**Payout Examples:**
+1. Preview Payout
+2. Create Payout
+3. Get Payout
+4. List Payouts
+5. Get Payout Approval Instance
+6. Approve Payout
+7. Reject Payout
+8. Cancel Payout
+
+**Assets Examples:**
+1. List Enabled Assets
+2. Get All Available Assets
+3. List Asset Network Fees
+4. Show Crypto Assets by Network
+5. Show Payable Assets Only
+6. Compare Mainnet vs Testnet Assets
+
+**Balance Examples:**
+1. Show Balance Summary
+2. Show Balance by Currency
+3. Show Available Balances Only
+4. Show Locked and Pending Balances
+5. Compare Balance Types
+
+**Product Examples:**
+1. List Products
+2. Create Product with Variants
+3. Create Product with Selling Plan
+4. Get Product
+5. Update Product
+6. Delete Product
+7. List Active Products
+8. List Selling Plan Groups
+9. Create Selling Plan Group
+10. Get Selling Plan Group
+11. Update Selling Plan Group
+12. Delete Selling Plan Group
+13. List Selling Plans
+14. Create Selling Plan
+15. Get Selling Plan
+16. Update Selling Plan
+17. Delete Selling Plan
+18. Calculate Selling Plan Price
+
+**Payment Link Examples:**
+1. List Payment Links
+2. Create Payment Link
+3. Get Payment Link
+4. Update Payment Link
+5. Delete Payment Link
+6. List Active Payment Links
+7. List Payment Links by Product
+
+**Subscription Examples:**
+1. List Subscriptions
+2. List Subscriptions by Customer
+3. List Subscriptions by Status
+4. Get Subscription
+5. Cancel Subscription at Period End
+6. Cancel Subscription Immediately
+7. Pause Subscription
+8. Pause Subscription with Auto-Resume
+9. Resume Subscription
 
 **Webhook Examples:**
 1. Start Webhook Event Receiver Server
@@ -160,8 +233,14 @@ The examples are organized into separate files by functionality:
 - `payment_intent_examples.go` - Payment intent examples (crypto & card payments)
 - `customer_examples.go` - Customer management examples
 - `refund_examples.go` - Refund examples
-- `payroll_examples.go` - Payroll examples
+- `payroll_examples.go` - Payroll examples (normal and Binance)
 - `merchant_address_examples.go` - Merchant address/wallet examples
+- `payout_examples.go` - Payout examples with approval workflow
+- `assets_examples.go` - Assets and network fee examples
+- `balance_examples.go` - Balance query examples
+- `product_examples.go` - Product and selling plan management examples
+- `payment_link_examples.go` - Payment link management examples
+- `subscription_examples.go` - Subscription management examples
 - `webhook_example.go` - Webhook event receiver server example
 
 ## Integration Approaches
