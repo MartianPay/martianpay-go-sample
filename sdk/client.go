@@ -157,51 +157,64 @@ func (c *Client) sendRequestWithQuery(method, path string, params interface{}, r
 			t = t.Elem()
 		}
 
-		for i := 0; i < v.NumField(); i++ {
-			field := v.Field(i)
-			fieldType := t.Field(i)
-
-			// Try form tag first, then fall back to json tag
-			tag := fieldType.Tag.Get("form")
-			if tag == "" {
-				tag = fieldType.Tag.Get("json")
+		// Handle map types
+		if v.Kind() == reflect.Map {
+			for _, key := range v.MapKeys() {
+				value := v.MapIndex(key)
+				keyStr := fmt.Sprintf("%v", key.Interface())
+				valueStr := fmt.Sprintf("%v", value.Interface())
+				if valueStr != "" {
+					queryParams.Add(keyStr, valueStr)
+				}
 			}
+		} else if v.Kind() == reflect.Struct {
+			// Handle struct types
+			for i := 0; i < v.NumField(); i++ {
+				field := v.Field(i)
+				fieldType := t.Field(i)
 
-			// Skip if field is empty or nil
-			if tag == "" || tag == "-" {
-				continue
-			}
+				// Try form tag first, then fall back to json tag
+				tag := fieldType.Tag.Get("form")
+				if tag == "" {
+					tag = fieldType.Tag.Get("json")
+				}
 
-			// Extract field name from tag (handle comma-separated options)
-			fieldName := tag
-			if idx := len(tag); idx > 0 {
-				if commaIdx := 0; commaIdx < idx {
-					for j, c := range tag {
-						if c == ',' {
-							fieldName = tag[:j]
-							break
+				// Skip if field is empty or nil
+				if tag == "" || tag == "-" {
+					continue
+				}
+
+				// Extract field name from tag (handle comma-separated options)
+				fieldName := tag
+				if idx := len(tag); idx > 0 {
+					if commaIdx := 0; commaIdx < idx {
+						for j, c := range tag {
+							if c == ',' {
+								fieldName = tag[:j]
+								break
+							}
 						}
 					}
 				}
-			}
 
-			// Add non-zero values to query params
-			switch field.Kind() {
-			case reflect.String:
-				if field.String() != "" {
-					queryParams.Add(fieldName, field.String())
-				}
-			case reflect.Int, reflect.Int32, reflect.Int64:
-				queryParams.Add(fieldName, strconv.FormatInt(field.Int(), 10))
-			case reflect.Bool:
-				queryParams.Add(fieldName, strconv.FormatBool(field.Bool()))
-			case reflect.Ptr:
-				if !field.IsNil() {
-					switch field.Elem().Kind() {
-					case reflect.String:
-						queryParams.Add(fieldName, field.Elem().String())
-					case reflect.Bool:
-						queryParams.Add(fieldName, strconv.FormatBool(field.Elem().Bool()))
+				// Add non-zero values to query params
+				switch field.Kind() {
+				case reflect.String:
+					if field.String() != "" {
+						queryParams.Add(fieldName, field.String())
+					}
+				case reflect.Int, reflect.Int32, reflect.Int64:
+					queryParams.Add(fieldName, strconv.FormatInt(field.Int(), 10))
+				case reflect.Bool:
+					queryParams.Add(fieldName, strconv.FormatBool(field.Bool()))
+				case reflect.Ptr:
+					if !field.IsNil() {
+						switch field.Elem().Kind() {
+						case reflect.String:
+							queryParams.Add(fieldName, field.Elem().String())
+						case reflect.Bool:
+							queryParams.Add(fieldName, strconv.FormatBool(field.Elem().Bool()))
+						}
 					}
 				}
 			}
