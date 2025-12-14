@@ -418,11 +418,61 @@ The webhook server will:
 - Display detailed event information based on event type (payment_intent, refund, payout, payroll, etc.)
 
 **Supported Event Types:**
-- `payment_intent.*` - Payment intent events
-- `refund.*` - Refund events
-- `payout.*` - Payout events
-- `payroll.*` - Payroll events
-- `payroll_item.*` - Payroll item events
+
+**Payment Intent Events:**
+- `payment_intent.created` - New payment intent is created
+- `payment_intent.succeeded` - Payment intent has been fully paid and completed successfully
+- `payment_intent.payment_failed` - Payment attempt for a payment intent fails
+- `payment_intent.processing` - Payment intent is being processed (e.g., waiting for blockchain confirmation)
+- `payment_intent.partially_paid` - Payment intent has received partial payment but is not yet fully paid
+- `payment_intent.canceled` - Payment intent is canceled
+
+**Refund Events:**
+- `refund.created` - New refund is created
+- `refund.succeeded` - Refund has been successfully processed and funds returned to customer
+- `refund.updated` - Refund's details are updated
+- `refund.failed` - Refund attempt fails
+
+**Payout Events:**
+- `payout.created` - New payout is created
+- `payout.succeeded` - Payout has been successfully transferred to the recipient
+- `payout.updated` - Payout's details are updated
+- `payout.failed` - Payout attempt fails
+
+**Payroll Events:**
+- `payroll.created` - New payroll batch is created
+- `payroll.approved` - Payroll batch has been approved for execution
+- `payroll.rejected` - Payroll batch approval is rejected
+- `payroll.canceled` - Payroll batch is canceled
+- `payroll.executing` - Payroll batch execution has started
+- `payroll.completed` - All items in a payroll batch have been processed successfully
+- `payroll.failed` - Payroll batch execution fails
+
+**Payroll Item Events:**
+- `payroll_item.processing` - Individual payroll item is being processed
+- `payroll_item.succeeded` - Individual payroll item has been successfully paid
+- `payroll_item.failed` - Individual payroll item payment fails
+- `payroll_item.address_verification_sent` - Address verification email has been sent to the recipient
+- `payroll_item.address_verified` - Recipient has verified their wallet address
+
+**Subscription Events:**
+- `subscription.created` - New subscription is created
+- `subscription.updated` - Subscription's details are updated (e.g., plan, quantity, billing cycle)
+- `subscription.deleted` - Subscription is deleted or permanently canceled
+- `subscription.paused` - Subscription is temporarily paused
+- `subscription.resumed` - Paused subscription is resumed
+- `subscription.trial_will_end` - Subscription's trial period is about to end (typically 3 days before)
+
+**Invoice Events:**
+- `invoice.created` - New invoice is created (draft state)
+- `invoice.finalized` - Invoice is finalized and ready for payment
+- `invoice.paid` - Invoice has been fully paid
+- `invoice.payment_succeeded` - Payment attempt for an invoice succeeds
+- `invoice.payment_failed` - Payment attempt for an invoice fails
+- `invoice.payment_action_required` - Invoice payment requires additional action from the customer
+- `invoice.upcoming` - Upcoming invoice will be generated soon (for subscriptions)
+- `invoice.updated` - Invoice's details are updated
+- `invoice.voided` - Invoice is voided and can no longer be paid
 
 ## Notes
 

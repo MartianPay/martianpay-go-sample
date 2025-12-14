@@ -11,62 +11,113 @@ import (
 	"time"
 )
 
-// Description of the event (for example, `invoice.created` or `charge.refunded`).
+// EventType describes the type of webhook event (for example, `invoice.created` or `payment_intent.succeeded`).
 type EventType string
 
-// List of values that EventType can take
+// Webhook event types
 const (
-	EventTypePaymentIntentCreated       EventType = "payment_intent.created"
-	EventTypePaymentIntentSucceeded     EventType = "payment_intent.succeeded"
+	// Payment Intent events
+
+	// EventTypePaymentIntentCreated is sent when a new payment intent is created
+	EventTypePaymentIntentCreated EventType = "payment_intent.created"
+	// EventTypePaymentIntentSucceeded is sent when a payment intent has been fully paid and completed successfully
+	EventTypePaymentIntentSucceeded EventType = "payment_intent.succeeded"
+	// EventTypePaymentIntentPaymentFailed is sent when a payment attempt for a payment intent fails
 	EventTypePaymentIntentPaymentFailed EventType = "payment_intent.payment_failed"
-	EventTypePaymentIntentProcessing    EventType = "payment_intent.processing"
+	// EventTypePaymentIntentProcessing is sent when a payment intent is being processed (e.g., waiting for blockchain confirmation)
+	EventTypePaymentIntentProcessing EventType = "payment_intent.processing"
+	// EventTypePaymentIntentPartiallyPaid is sent when a payment intent has received partial payment but is not yet fully paid
 	EventTypePaymentIntentPartiallyPaid EventType = "payment_intent.partially_paid"
-	EventTypePaymentIntentCanceled      EventType = "payment_intent.canceled"
+	// EventTypePaymentIntentCanceled is sent when a payment intent is canceled
+	EventTypePaymentIntentCanceled EventType = "payment_intent.canceled"
 
-	EventTypeRefundCreated   EventType = "refund.created"
+	// Refund events
+
+	// EventTypeRefundCreated is sent when a new refund is created
+	EventTypeRefundCreated EventType = "refund.created"
+	// EventTypeRefundSucceeded is sent when a refund has been successfully processed and funds returned to customer
 	EventTypeRefundSucceeded EventType = "refund.succeeded"
-	EventTypeRefundUpdated   EventType = "refund.updated"
-	EventTypeRefundFailed    EventType = "refund.failed"
+	// EventTypeRefundUpdated is sent when a refund's details are updated
+	EventTypeRefundUpdated EventType = "refund.updated"
+	// EventTypeRefundFailed is sent when a refund attempt fails
+	EventTypeRefundFailed EventType = "refund.failed"
 
-	EventTypePayoutCreated   EventType = "payout.created"
+	// Payout events
+
+	// EventTypePayoutCreated is sent when a new payout is created
+	EventTypePayoutCreated EventType = "payout.created"
+	// EventTypePayoutSucceeded is sent when a payout has been successfully transferred to the recipient
 	EventTypePayoutSucceeded EventType = "payout.succeeded"
-	EventTypePayoutUpdated   EventType = "payout.updated"
-	EventTypePayoutFailed    EventType = "payout.failed"
+	// EventTypePayoutUpdated is sent when a payout's details are updated
+	EventTypePayoutUpdated EventType = "payout.updated"
+	// EventTypePayoutFailed is sent when a payout attempt fails
+	EventTypePayoutFailed EventType = "payout.failed"
 
 	// Payroll events
-	EventTypePayrollCreated   EventType = "payroll.created"
-	EventTypePayrollApproved  EventType = "payroll.approved"
-	EventTypePayrollRejected  EventType = "payroll.rejected"
-	EventTypePayrollCanceled  EventType = "payroll.canceled"
+
+	// EventTypePayrollCreated is sent when a new payroll batch is created
+	EventTypePayrollCreated EventType = "payroll.created"
+	// EventTypePayrollApproved is sent when a payroll batch has been approved for execution
+	EventTypePayrollApproved EventType = "payroll.approved"
+	// EventTypePayrollRejected is sent when a payroll batch approval is rejected
+	EventTypePayrollRejected EventType = "payroll.rejected"
+	// EventTypePayrollCanceled is sent when a payroll batch is canceled
+	EventTypePayrollCanceled EventType = "payroll.canceled"
+	// EventTypePayrollExecuting is sent when a payroll batch execution has started
 	EventTypePayrollExecuting EventType = "payroll.executing"
+	// EventTypePayrollCompleted is sent when all items in a payroll batch have been processed successfully
 	EventTypePayrollCompleted EventType = "payroll.completed"
-	EventTypePayrollFailed    EventType = "payroll.failed"
+	// EventTypePayrollFailed is sent when a payroll batch execution fails
+	EventTypePayrollFailed EventType = "payroll.failed"
 
 	// Payroll item events
-	EventTypePayrollItemProcessing          EventType = "payroll_item.processing"
-	EventTypePayrollItemSucceeded           EventType = "payroll_item.succeeded"
-	EventTypePayrollItemFailed              EventType = "payroll_item.failed"
+
+	// EventTypePayrollItemProcessing is sent when an individual payroll item is being processed
+	EventTypePayrollItemProcessing EventType = "payroll_item.processing"
+	// EventTypePayrollItemSucceeded is sent when an individual payroll item has been successfully paid
+	EventTypePayrollItemSucceeded EventType = "payroll_item.succeeded"
+	// EventTypePayrollItemFailed is sent when an individual payroll item payment fails
+	EventTypePayrollItemFailed EventType = "payroll_item.failed"
+	// EventTypePayrollItemAddressVerification is sent when address verification email has been sent to the recipient
 	EventTypePayrollItemAddressVerification EventType = "payroll_item.address_verification_sent"
-	EventTypePayrollItemAddressVerified     EventType = "payroll_item.address_verified"
+	// EventTypePayrollItemAddressVerified is sent when the recipient has verified their wallet address
+	EventTypePayrollItemAddressVerified EventType = "payroll_item.address_verified"
 
 	// Subscription events
-	EventTypeSubscriptionCreated   EventType = "subscription.created"
-	EventTypeSubscriptionUpdated   EventType = "subscription.updated"
-	EventTypeSubscriptionDeleted   EventType = "subscription.deleted"
-	EventTypeSubscriptionPaused    EventType = "subscription.paused"
-	EventTypeSubscriptionResumed   EventType = "subscription.resumed"
+
+	// EventTypeSubscriptionCreated is sent when a new subscription is created
+	EventTypeSubscriptionCreated EventType = "subscription.created"
+	// EventTypeSubscriptionUpdated is sent when a subscription's details are updated (e.g., plan, quantity, billing cycle)
+	EventTypeSubscriptionUpdated EventType = "subscription.updated"
+	// EventTypeSubscriptionDeleted is sent when a subscription is deleted or permanently canceled
+	EventTypeSubscriptionDeleted EventType = "subscription.deleted"
+	// EventTypeSubscriptionPaused is sent when a subscription is temporarily paused
+	EventTypeSubscriptionPaused EventType = "subscription.paused"
+	// EventTypeSubscriptionResumed is sent when a paused subscription is resumed
+	EventTypeSubscriptionResumed EventType = "subscription.resumed"
+	// EventTypeSubscriptionTrialWill is sent when a subscription's trial period is about to end (typically 3 days before)
 	EventTypeSubscriptionTrialWill EventType = "subscription.trial_will_end"
 
 	// Invoice events
-	EventTypeInvoiceCreated               EventType = "invoice.created"
-	EventTypeInvoiceFinalized             EventType = "invoice.finalized"
-	EventTypeInvoicePaid                  EventType = "invoice.paid"
-	EventTypeInvoicePaymentSucceeded      EventType = "invoice.payment_succeeded"
-	EventTypeInvoicePaymentFailed         EventType = "invoice.payment_failed"
+
+	// EventTypeInvoiceCreated is sent when a new invoice is created (draft state)
+	EventTypeInvoiceCreated EventType = "invoice.created"
+	// EventTypeInvoiceFinalized is sent when an invoice is finalized and ready for payment
+	EventTypeInvoiceFinalized EventType = "invoice.finalized"
+	// EventTypeInvoicePaid is sent when an invoice has been fully paid
+	EventTypeInvoicePaid EventType = "invoice.paid"
+	// EventTypeInvoicePaymentSucceeded is sent when a payment attempt for an invoice succeeds
+	EventTypeInvoicePaymentSucceeded EventType = "invoice.payment_succeeded"
+	// EventTypeInvoicePaymentFailed is sent when a payment attempt for an invoice fails
+	EventTypeInvoicePaymentFailed EventType = "invoice.payment_failed"
+	// EventTypeInvoicePaymentActionRequired is sent when an invoice payment requires additional action from the customer
 	EventTypeInvoicePaymentActionRequired EventType = "invoice.payment_action_required"
-	EventTypeInvoiceUpcoming              EventType = "invoice.upcoming"
-	EventTypeInvoiceUpdated               EventType = "invoice.updated"
-	EventTypeInvoiceVoided                EventType = "invoice.voided"
+	// EventTypeInvoiceUpcoming is sent when an upcoming invoice will be generated soon (for subscriptions)
+	EventTypeInvoiceUpcoming EventType = "invoice.upcoming"
+	// EventTypeInvoiceUpdated is sent when an invoice's details are updated
+	EventTypeInvoiceUpdated EventType = "invoice.updated"
+	// EventTypeInvoiceVoided is sent when an invoice is voided and can no longer be paid
+	EventTypeInvoiceVoided EventType = "invoice.voided"
 )
 
 const (
