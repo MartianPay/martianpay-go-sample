@@ -530,11 +530,15 @@ func updateProduct(client *martianpay.Client) {
 				Description:            current.Description,
 				Active:                 active,
 				DefaultCurrency:        current.DefaultCurrency,
+				TaxCode:                current.TaxCode,
 				CollectShippingAddress: current.CollectShippingAddress,
 				CollectTaxAddress:      current.CollectTaxAddress,
+				RequiresSellingPlan:    current.RequiresSellingPlan,
+				SellingPlanGroupIDs:    current.SellingPlanGroupIDs,
 				Options:                current.Options,
 				Variants:               current.Variants,
 				Metadata:               current.Metadata,
+				Version:                current.Version, // Required for optimistic locking
 			},
 		},
 	}
