@@ -5,7 +5,7 @@ go 1.25.3
 // replace github.com/MartianPay/martianpay-go-sample => ../../martianpay-go-sample
 
 require (
-	github.com/MartianPay/martianpay-go-sample v0.0.0-20251214082032-3dce04132ec0
+	github.com/MartianPay/martianpay-go-sample v0.0.0-20251214090946-d39ce106e45f
 	github.com/gin-gonic/gin v1.11.0
 	github.com/shopspring/decimal v1.4.0
 )
