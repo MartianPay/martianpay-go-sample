@@ -1,3 +1,5 @@
+// charge.go contains types for managing payment charges and fraud detection.
+// It provides structures for charge records and fraud assessment results.
 package developer
 
 // ChargeFraudMartianReport represents the fraud assessment result from MartianPay's system

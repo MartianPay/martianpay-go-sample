@@ -1,3 +1,6 @@
+// invoice.go contains types for managing subscription invoices and billing.
+// It provides structures for invoice creation, invoice items, payment collection,
+// and invoice lifecycle management for subscription-based billing.
 package developer
 
 // ================================

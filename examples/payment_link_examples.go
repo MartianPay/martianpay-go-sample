@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Payment Link API.
+// Payment links are shareable URLs that customers can use to complete purchases
+// with a hosted checkout page, supporting both one-time and subscription payments.
 package main
 
 import (

@@ -1,3 +1,6 @@
+// customer.go contains types for managing customers and customer authentication.
+// It provides structures for customer profiles, authentication tokens, payment methods,
+// and customer resolution across different authentication channels.
 package developer
 
 import "github.com/dchest/uniuri"
@@ -8,6 +11,7 @@ const (
 	CustomerIDPrefix = "cus_"
 )
 
+// CustomerParams contains parameters for creating or updating a customer
 type CustomerParams struct {
 	// Name is the customer's full name
 	Name *string `json:"name" example:"John Doe"`
@@ -25,6 +29,7 @@ type CustomerParams struct {
 	Phone *string `json:"phone" example:"+1234567890"`
 }
 
+// Customer represents a customer in the MartianPay system
 type Customer struct {
 	// ID is the unique customer identifier (e.g., "cus_abc123")
 	ID string `json:"id" example:"cus_abc123"`
@@ -63,6 +68,7 @@ type Customer struct {
 	Phone *string `json:"phone,omitempty" example:"+1234567890"`
 }
 
+// GenerateCustomerID generates a new unique customer identifier with the 'cus_' prefix
 func (c *Customer) GenerateCustomerID() string {
 	return CustomerIDPrefix + uniuri.NewLen(CustomerIDLength)
 }

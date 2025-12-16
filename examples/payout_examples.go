@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Payout API.
+// Payouts enable merchants to transfer funds from their MartianPay balance to external
+// cryptocurrency addresses or bank accounts with automatic currency conversion support.
 package main
 
 import (

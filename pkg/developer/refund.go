@@ -1,3 +1,6 @@
+// refund.go contains types for managing payment refunds.
+// It provides structures for creating refunds, tracking refund status, and managing
+// refund transactions for both cryptocurrency and fiat payments.
 package developer
 
 const (

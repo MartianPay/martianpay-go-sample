@@ -1,3 +1,6 @@
+// approval.go contains types for managing approval workflows and multi-level authorization.
+// It provides structures for approval instances, flows, steps, and approval records
+// used to implement multi-level approval processes for sensitive operations.
 package developer
 
 // ApprovalInstance represents an approval workflow instance

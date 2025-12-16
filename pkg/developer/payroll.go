@@ -1,3 +1,6 @@
+// payroll.go contains types for managing batch payroll payments.
+// It provides structures for creating payroll batches, managing payroll items,
+// and tracking address verification for payroll recipients.
 package developer
 
 import (
@@ -270,6 +273,7 @@ type PayrollValidation struct {
 	BalanceEnough bool `json:"balance_enough"`
 }
 
+// IsWalletInfoValid checks if all wallet-related fields are valid
 func (p *PayrollValidation) IsWalletInfoValid() bool {
 	return p.AmountValid && p.CoinValid && p.NetworkValid && p.AddressValid && p.PaymentMethodValid
 }
@@ -465,31 +469,37 @@ type BinanceFromItems struct {
 	UpdatedAt int64 `json:"updated_at"`
 }
 
+// GeneratePayrollId generates a new unique payroll identifier
 func GeneratePayrollId() string {
 	uniqueString := uniuri.NewLen(PayrollIdLength)
 	return PayrollIdPrefix + uniqueString
 }
 
+// GeneratePayrollItemId generates a new unique payroll item identifier
 func GeneratePayrollItemId() string {
 	uniqueString := uniuri.NewLen(PayrollItemIdLength)
 	return PayrollItemIdPrefix + uniqueString
 }
 
+// GeneratePayrollSwapItemId generates a new unique payroll swap item identifier
 func GeneratePayrollSwapItemId() string {
 	uniqueString := uniuri.NewLen(PayrollSwapItemIdLength)
 	return PayrollSwapItemIdPrefix + uniqueString
 }
 
+// GeneratePayrollBinanceFromItemId generates a new unique Binance from item identifier
 func GeneratePayrollBinanceFromItemId() string {
 	uniqueString := uniuri.NewLen(PayrollBinanceFromItemLength)
 	return PayrollBinanceFromItemPrefix + uniqueString
 }
 
+// GeneratePayrollAddressVerifyID generates a new unique address verification identifier
 func GeneratePayrollAddressVerifyID() string {
 	uniqueString := uniuri.NewLen(PayrollAddressVerifyIDLength)
 	return PayrollAddressVerifyIDPrefix + uniqueString
 }
 
+// GeneratePayrollAddressVerificationCode generates a new verification code for address verification
 func GeneratePayrollAddressVerificationCode() string {
 	uniqueString := uniuri.NewLen(PayrollAddressVerifyIDLength)
 	return uniqueString

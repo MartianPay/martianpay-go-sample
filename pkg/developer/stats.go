@@ -1,3 +1,6 @@
+// stats.go contains types for retrieving merchant statistics and analytics.
+// It provides structures for balance flows, chart data, and time-series statistics
+// to help merchants track their business performance.
 package developer
 
 // ================================

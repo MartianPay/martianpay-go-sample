@@ -1,10 +1,15 @@
+// unfreeze.go contains types for managing the unfreeze process for AML-frozen funds.
+// When funds are frozen due to AML checks, they can be unfrozen either by reversing back
+// to the sender or releasing to the merchant's balance.
 package developer
 
-// Unfreeze types
+// Unfreeze types define how frozen funds should be handled after review
 const (
 	// UnfreezeTypeReverse sends unfrozen funds back to sender address (default)
+	// This is typically used when AML concerns are confirmed or the transaction is deemed invalid.
 	UnfreezeTypeReverse = "unfreeze_reverse"
 	// UnfreezeTypeRelease adds unfrozen funds to merchant's available balance
+	// This is used when AML review determines the transaction is legitimate and safe to process.
 	UnfreezeTypeRelease = "unfreeze_release"
 )
 

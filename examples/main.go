@@ -1,3 +1,6 @@
+// Package main is the entry point for MartianPay SDK examples.
+// This interactive CLI application demonstrates all major features of the MartianPay API
+// including payment processing, customer management, subscriptions, payouts, and more.
 package main
 
 import (
@@ -10,10 +13,21 @@ import (
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
+// main is the entry point for the MartianPay Go SDK example program.
+// It provides an interactive command-line interface for testing all SDK features.
+//
+// The program flow:
+// 1. Prompts for API key (or uses default from common.go)
+// 2. Displays a main menu with 12 categories of examples
+// 3. Each category has sub-menus with specific example functions
+// 4. Runs selected examples and displays results
+//
+// Usage:
+//   go run examples/*.go
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	// Get API Key from user
+	// Get API Key from user - required for all MartianPay API calls
 	fmt.Println("===========================================")
 	fmt.Println("  MartianPay Go SDK Examples")
 	fmt.Println("===========================================")
@@ -32,10 +46,11 @@ func main() {
 		fmt.Println("Using custom API key")
 	}
 
-	// Store API key globally for all examples
+	// Store API key globally for all examples to use
 	currentAPIKey = apiKeyInput
 	fmt.Println()
 
+	// Main program loop - continues until user chooses to exit
 	for {
 		showMainMenu()
 		fmt.Print("\nEnter your choice (0 to exit): ")
@@ -50,19 +65,36 @@ func main() {
 			break
 		}
 
+		// Parse user input as integer for menu selection
 		num, err := strconv.Atoi(choice)
 		if err != nil || num < 0 || num > 12 {
 			fmt.Println("Invalid choice. Please try again.")
 			continue
 		}
 
-		// Show submenu based on category
+		// Show submenu based on selected category (1-12)
 		if num > 0 {
 			handleCategory(num, scanner)
 		}
 	}
 }
 
+// showMainMenu displays the main menu with all available example categories.
+// Each category contains related examples grouped by functionality.
+//
+// Categories:
+// 1. Payment Intent - Create and manage payment transactions (crypto and fiat)
+// 2. Customer - Customer management and saved payment methods
+// 3. Refund - Process refunds for completed payments
+// 4. Payroll - Batch crypto payments to multiple recipients
+// 5. Merchant Address - Manage and verify merchant wallet addresses
+// 6. Payout - Withdraw funds from merchant balance to external wallets
+// 7. Assets - Query available cryptocurrencies and fiat currencies
+// 8. Balance - View merchant account balances
+// 9. Product - Create and manage products with variants
+// 10. Payment Link - Generate payment links for products
+// 11. Subscription - Manage recurring subscriptions
+// 12. Webhook - Test webhook event handling
 func showMainMenu() {
 	fmt.Println("\n" + strings.Repeat("=", 80))
 	fmt.Println("MartianPay SDK Examples - Main Menu")
@@ -84,6 +116,15 @@ func showMainMenu() {
 	fmt.Println("\n0. Exit")
 }
 
+// handleCategory displays the sub-menu for a specific category and handles user selection.
+// It shows all available examples in the category and executes the selected example.
+//
+// Parameters:
+//   - category: The category number (1-12) selected from the main menu
+//   - scanner: A bufio.Scanner for reading user input
+//
+// The function runs in a loop, allowing users to execute multiple examples
+// from the same category before returning to the main menu.
 func handleCategory(category int, scanner *bufio.Scanner) {
 	for {
 		fmt.Println("\n" + strings.Repeat("=", 80))
@@ -91,6 +132,7 @@ func handleCategory(category int, scanner *bufio.Scanner) {
 		var menuItems []string
 		var categoryName string
 
+		// Build menu items based on the selected category
 		switch category {
 		case 1:
 			categoryName = "Payment Intent Examples"
@@ -260,7 +302,20 @@ func handleCategory(category int, scanner *bufio.Scanner) {
 	}
 }
 
+// getExampleNumber maps a category and menu choice to the global example number.
+// This mapping system allows the switch statement in runExample to handle all
+// examples with a single sequential numbering scheme.
+//
+// Parameters:
+//   - category: The category number (1-12)
+//   - choice: The menu item number within the category
+//
+// Returns:
+//   - The global example number used by runExample
+//
+// Example: Category 2 (Customer), Choice 1 => Example number 9
 func getExampleNumber(category, choice int) int {
+	// Map each category to its starting example number offset
 	categoryOffsets := map[int]int{
 		1:  0,  // Payment Intent: 1-8
 		2:  8,  // Customer: 9-13
@@ -279,10 +334,21 @@ func getExampleNumber(category, choice int) int {
 	return categoryOffsets[category] + choice
 }
 
+// runExample executes a specific example based on the example number.
+// This function creates a new MartianPay client with the current API key
+// and calls the corresponding example function.
+//
+// Parameters:
+//   - choice: The global example number (1-83) to execute
+//
+// Each example is self-contained and demonstrates a specific API feature.
+// Examples may prompt for additional input and display results to the console.
 func runExample(choice int) {
 	fmt.Printf("Using API Key: %s\n", currentAPIKey)
+	// Create a new MartianPay client with the current API key
 	client := martianpay.NewClient(currentAPIKey)
 
+	// Route to the appropriate example function based on choice
 	switch choice {
 	case 1:
 		createAndUpdatePaymentIntent(client)

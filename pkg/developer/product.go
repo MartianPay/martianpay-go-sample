@@ -1,3 +1,6 @@
+// product.go contains types for managing products and product variants.
+// It provides structures for product catalogs, variants, options, pricing,
+// and inventory management for e-commerce operations.
 package developer
 
 // ================================

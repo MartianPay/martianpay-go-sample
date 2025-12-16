@@ -1,3 +1,10 @@
+// Package main provides examples for the MartianPay Payroll API.
+// Payroll allows merchants to send batch cryptocurrency payments to multiple recipients,
+// perfect for paying employees, contractors, or distributing funds.
+//
+// Two payment methods are supported:
+// 1. Normal - Direct blockchain transfer (may incur network fees)
+// 2. Binance - Transfer via Binance Pay (lower fees for Binance users)
 package main
 
 import (
@@ -10,7 +17,13 @@ import (
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
-// generatePayrollEmail generates a random email for payroll items
+// generatePayrollEmail generates a unique random email for payroll item recipients.
+//
+// Parameters:
+//   - prefix: A prefix string to identify the recipient type
+//
+// Returns:
+//   - A unique email address in the format: prefix_timestamp_randomNumber@example.com
 func generatePayrollEmail(prefix string) string {
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(1000000)
@@ -19,6 +32,29 @@ func generatePayrollEmail(prefix string) string {
 }
 
 // Payroll Examples
+
+// createDirectPayroll demonstrates creating a direct payroll with normal payment method.
+// This function shows the complete workflow for batch cryptocurrency payments.
+//
+// Steps:
+// 1. Query available crypto assets from merchant balance
+// 2. Filter assets with sufficient balance (>= 0.1)
+// 3. Let user select the cryptocurrency and network
+// 4. Prompt for recipient address and amount
+// 5. Create payroll with auto-approval enabled
+// 6. Display payroll details and status
+//
+// Payment Method: Normal (direct blockchain transfer)
+//
+// Use Cases:
+//   - Employee salary payments in crypto
+//   - Contractor payments
+//   - Bulk fund distribution
+//
+// API Endpoints Used:
+//   - GET /v1/assets (query available assets)
+//   - GET /v1/balance (check merchant balance)
+//   - POST /v1/payrolls/direct (create payroll)
 func createDirectPayroll(client *martianpay.Client) {
 	fmt.Println("Creating Direct Payroll...")
 
@@ -157,6 +193,22 @@ func createDirectPayroll(client *martianpay.Client) {
 	fmt.Printf("  Total Amount: %s\n", response.Payroll.TotalAmount)
 }
 
+// createDirectPayrollBinance demonstrates creating a direct payroll with Binance payment method.
+// Binance payment method offers lower fees and faster transfers for recipients with Binance accounts.
+//
+// Payment Method: Binance (Binance Pay transfer)
+//
+// Benefits of Binance Payment:
+//   - Lower transaction fees compared to blockchain transfers
+//   - Faster transfer speed
+//   - Requires recipient to have a Binance account
+//
+// Steps are similar to createDirectPayroll but uses "binance" as payment method.
+//
+// API Endpoints Used:
+//   - GET /v1/assets
+//   - GET /v1/balance
+//   - POST /v1/payrolls/direct (with payment_method: "binance")
 func createDirectPayrollBinance(client *martianpay.Client) {
 	fmt.Println("Creating Direct Payroll (Binance Payment Method)...")
 
@@ -295,6 +347,16 @@ func createDirectPayrollBinance(client *martianpay.Client) {
 	fmt.Printf("  Total Amount: %s\n", response.Payroll.TotalAmount)
 }
 
+// getPayroll retrieves and displays details of a specific payroll batch.
+//
+// Displayed Information:
+//   - Payroll ID and External ID
+//   - Status (pending, processing, completed, failed)
+//   - Total amount to be distributed
+//   - Number of payment items in the batch
+//
+// API Endpoints Used:
+//   - GET /v1/payrolls/:id
 func getPayroll(client *martianpay.Client) {
 	fmt.Println("Getting Payroll...")
 	fmt.Print("Enter Payroll ID: ")
@@ -319,6 +381,15 @@ func getPayroll(client *martianpay.Client) {
 	fmt.Printf("  Total Items: %d\n", response.Payroll.TotalItemNum)
 }
 
+// listPayrolls retrieves and displays a paginated list of all payroll batches.
+//
+// Features:
+//   - Pagination support
+//   - Displays payroll ID, status, and total amount
+//   - Shows total count of payroll batches
+//
+// API Endpoints Used:
+//   - GET /v1/payrolls
 func listPayrolls(client *martianpay.Client) {
 	fmt.Println("Listing Payrolls...")
 
@@ -341,6 +412,22 @@ func listPayrolls(client *martianpay.Client) {
 	}
 }
 
+// listPayrollItems retrieves and displays individual payment items within a payroll batch.
+// Each item represents a single payment to one recipient.
+//
+// Displayed Information for Each Item:
+//   - Item ID
+//   - Payment amount
+//   - Payment status (pending, processing, sent, failed)
+//   - Network used for transfer
+//
+// Use Cases:
+//   - Track individual payment status within a batch
+//   - Identify failed payments for retry
+//   - Reconcile individual transfers
+//
+// API Endpoints Used:
+//   - GET /v1/payroll_items
 func listPayrollItems(client *martianpay.Client) {
 	fmt.Println("Listing Payroll Items...")
 	fmt.Print("Enter Payroll ID: ")

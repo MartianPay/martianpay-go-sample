@@ -1,6 +1,10 @@
+// deposit.go contains types for managing cryptocurrency deposit accounts and transactions.
+// It includes structures for tracking deposit addresses, blockchain transactions, and AML screening results.
 package developer
 
-// DepositAccount represents a cryptocurrency deposit account for receiving payments
+// DepositAccount represents a cryptocurrency deposit account for receiving payments.
+// It is used to track deposits to specific blockchain addresses, whether temporary (for single payments)
+// or permanent (for recurring deposits with unique identifiers).
 type DepositAccount struct {
 	// MerchantId is the unique identifier of the merchant
 	MerchantId string `json:"merchant_id"`

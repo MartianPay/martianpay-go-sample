@@ -1,3 +1,6 @@
+// payment_intent.go contains types for managing payment intents and payment processing.
+// It provides structures for payment intents, charges, transactions, and payment method options
+// for both cryptocurrency and fiat payment processing.
 package developer
 
 import (
@@ -10,6 +13,7 @@ const (
 	PaymentIntentObject = "payment_intent"
 )
 
+// PaymentIntentStatus represents the current state of a payment intent
 type PaymentIntentStatus string
 
 const (
@@ -73,6 +77,7 @@ type TransactionDetails struct {
 	FeeCurrency string `json:"fee_currency"`
 }
 
+// PaymentMethodType represents the type of payment method used for a payment intent
 type PaymentMethodType string
 
 const (
@@ -318,6 +323,7 @@ type PaymentIntent struct {
 	MerchantName *string `json:"merchant_name,omitempty"`
 }
 
+// PaymentIntentCancellationReason represents the reason why a payment intent was cancelled
 type PaymentIntentCancellationReason string
 
 const (

@@ -1,3 +1,5 @@
+// merchant_account.go contains types for managing merchant payout accounts.
+// It provides structures for bank accounts and wallet addresses used for receiving payouts.
 package developer
 
 import (
@@ -5,14 +7,20 @@ import (
 )
 
 const (
+	// MerchantAccountTypeWallet indicates the account is a cryptocurrency wallet address
 	MerchantAccountTypeWallet = "wallet"
-	MerchantAccountTypeBank   = "bank"
+	// MerchantAccountTypeBank indicates the account is a traditional bank account
+	MerchantAccountTypeBank = "bank"
 
-	MerchantAccountObject   = "merchant_account"
-	MerchantAccountPrefix   = "ma_"
+	// MerchantAccountObject is the object type identifier for merchant accounts
+	MerchantAccountObject = "merchant_account"
+	// MerchantAccountPrefix is the prefix for merchant account IDs
+	MerchantAccountPrefix = "ma_"
+	// MerchantAccountIDLength is the length of the merchant account ID suffix
 	MerchantAccountIDLength = 24
 )
 
+// GenerateMerchantAccountID generates a new unique merchant account identifier with the 'ma_' prefix
 func GenerateMerchantAccountID() string {
 	return MerchantAccountPrefix + uniuri.NewLen(MerchantAccountIDLength)
 }

@@ -1,3 +1,5 @@
+// assets.go contains types for managing supported cryptocurrencies and fiat currencies.
+// It provides structures for asset definitions, exchange rates, and asset-related operations.
 package developer
 
 import "github.com/shopspring/decimal"

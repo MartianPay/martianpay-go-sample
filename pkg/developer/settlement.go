@@ -1,3 +1,6 @@
+// settlement.go contains types for managing payment settlements and balance flows.
+// It provides structures for tracking transaction settlements, fees, exchange rates,
+// and merchant balance changes.
 package developer
 
 import (
@@ -5,6 +8,7 @@ import (
 )
 
 const (
+	// SettlementObject is the object type identifier for settlement records
 	SettlementObject = "statement"
 )
 

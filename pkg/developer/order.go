@@ -1,3 +1,6 @@
+// order.go contains types for managing e-commerce orders.
+// It provides structures for order management, order items, shipping information,
+// and order status tracking for payment link transactions.
 package developer
 
 // ================================

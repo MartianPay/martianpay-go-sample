@@ -1,11 +1,13 @@
+// merchant.go contains types for managing merchant accounts, balances, and contracts.
+// It includes structures for merchant profiles, balance tracking, and contract management.
 package developer
 
 import "github.com/dchest/uniuri"
 
 const (
-	// MerchantIDLength is the length of the merchant ID suffix
+	// MerchantIDLength is the length of the merchant ID suffix (excluding prefix)
 	MerchantIDLength = 24
-	// MerchantIDPrefix is the prefix for merchant IDs
+	// MerchantIDPrefix is the prefix for merchant IDs (account prefix)
 	MerchantIDPrefix = "accu_"
 	// MerchantObject is the object type identifier for merchants
 	MerchantObject = "merchant"
@@ -79,6 +81,7 @@ type Merchant struct {
 	Roles []Role `json:"roles"`
 }
 
+// GenerateMerchantID generates a new unique merchant identifier with the 'accu_' prefix
 func GenerateMerchantID() string {
 	uniqueString := uniuri.NewLen(MerchantIDLength)
 	return MerchantIDPrefix + uniqueString
@@ -186,6 +189,7 @@ type MerchantContract struct {
 	Livemode bool `json:"livemode"`
 }
 
+// GenerateMerchantContractID generates a new unique merchant contract identifier
 func GenerateMerchantContractID() string {
 	uniqueString := uniuri.NewLen(MerchantContractIDLength)
 	return MerchantContractIDPrefix + uniqueString

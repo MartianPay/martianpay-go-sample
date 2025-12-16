@@ -1,3 +1,13 @@
+// Package main provides examples for the MartianPay Balance API.
+// The Balance API allows merchants to view their account balances across
+// multiple currencies and cryptocurrencies.
+//
+// Balance Types:
+//   - Available: Funds ready for immediate use (payouts, refunds)
+//   - Pending: Unreconciled deposits awaiting confirmation
+//   - Locked: Funds reserved for pending payouts or held transactions
+//   - Frozen: Funds restricted due to compliance or security holds
+//   - Total: Sum of all balance types
 package main
 
 import (
@@ -9,7 +19,22 @@ import (
 
 // Balance Examples
 
-// showBalance displays the merchant's current balance
+// showBalance displays a comprehensive summary of the merchant's balance.
+// This includes total balances and detailed breakdowns by currency/asset.
+//
+// Displayed Information:
+//   - Primary currency totals (Available, Pending, Locked, Frozen, Total)
+//   - Detailed balance for each currency/asset
+//   - Explanation of balance types
+//
+// Use Cases:
+//   - Check available funds before creating payouts
+//   - Monitor pending deposits
+//   - Review locked funds from pending transactions
+//   - Financial reporting and reconciliation
+//
+// API Endpoints Used:
+//   - GET /v1/balance
 func showBalance(client *martianpay.Client) {
 	fmt.Println("Getting Merchant Balance...")
 
@@ -55,7 +80,16 @@ func showBalance(client *martianpay.Client) {
 	fmt.Println(strings.Repeat("=", 80))
 }
 
-// showBalanceByCurrency displays balances filtered by currency/asset type
+// showBalanceByCurrency displays balances organized by currency type (crypto vs fiat).
+// This helps merchants understand their balance composition across different asset types.
+//
+// Features:
+//   - Separates cryptocurrency and fiat balances
+//   - Shows detailed breakdown for each asset
+//   - Displays all balance types (Available, Pending, Locked, Frozen)
+//
+// API Endpoints Used:
+//   - GET /v1/balance
 func showBalanceByCurrency(client *martianpay.Client) {
 	fmt.Println("Showing Balance by Currency...")
 
@@ -123,7 +157,21 @@ func showBalanceByCurrency(client *martianpay.Client) {
 	fmt.Println("\n" + strings.Repeat("=", 80))
 }
 
-// showAvailableBalancesOnly displays only available balances (non-zero)
+// showAvailableBalancesOnly displays only assets with non-zero available balances.
+// This is useful for quickly identifying which currencies you can use for payouts.
+//
+// Features:
+//   - Filters out currencies with zero available balance
+//   - Shows only immediately usable funds
+//   - Helps in payout planning
+//
+// Use Cases:
+//   - Check which currencies can be used for payouts
+//   - Quick view of liquid assets
+//   - Identify currencies needing deposits
+//
+// API Endpoints Used:
+//   - GET /v1/balance
 func showAvailableBalancesOnly(client *martianpay.Client) {
 	fmt.Println("Showing Available Balances Only...")
 
@@ -159,7 +207,21 @@ func showAvailableBalancesOnly(client *martianpay.Client) {
 	fmt.Println(strings.Repeat("=", 80))
 }
 
-// showLockedAndPendingBalances displays locked and pending balances
+// showLockedAndPendingBalances displays balances that are not immediately available.
+// This helps merchants track funds in transit or held for various reasons.
+//
+// Locked Balances:
+//   - Funds reserved for pending payouts
+//   - Held during transaction processing
+//   - Will become available when transactions complete
+//
+// Pending Balances:
+//   - Deposits awaiting blockchain confirmation
+//   - Payments being reconciled
+//   - Will become available after confirmation
+//
+// API Endpoints Used:
+//   - GET /v1/balance
 func showLockedAndPendingBalances(client *martianpay.Client) {
 	fmt.Println("Showing Locked and Pending Balances...")
 
@@ -206,7 +268,21 @@ func showLockedAndPendingBalances(client *martianpay.Client) {
 	fmt.Println(strings.Repeat("=", 80))
 }
 
-// compareBalanceTypes provides a side-by-side comparison of balance types
+// compareBalanceTypes provides a comprehensive side-by-side comparison of all balance types.
+// This tabular view makes it easy to see the distribution of funds across balance types.
+//
+// Features:
+//   - Summary totals for all balance types
+//   - Detailed breakdown by asset
+//   - Tabular format for easy comparison
+//
+// Use Cases:
+//   - Financial reporting
+//   - Balance reconciliation
+//   - Understanding fund allocation
+//
+// API Endpoints Used:
+//   - GET /v1/balance
 func compareBalanceTypes(client *martianpay.Client) {
 	fmt.Println("Comparing Balance Types...")
 
@@ -249,12 +325,13 @@ func compareBalanceTypes(client *martianpay.Client) {
 	fmt.Println(strings.Repeat("=", 90))
 }
 
-// Helper struct for balance information
+// BalanceInfo is a helper struct for organizing balance information by currency.
+// It stores all balance types for a single currency/asset.
 type BalanceInfo struct {
-	Currency  string
-	Available string
-	Pending   string
-	Locked    string
-	Frozen    string
-	Total     string
+	Currency  string // Currency or asset ID
+	Available string // Available balance (can be used immediately)
+	Pending   string // Pending balance (awaiting confirmation)
+	Locked    string // Locked balance (reserved for transactions)
+	Frozen    string // Frozen balance (compliance/security hold)
+	Total     string // Total balance (sum of all types)
 }

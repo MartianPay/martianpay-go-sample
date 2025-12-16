@@ -1,3 +1,6 @@
+// subscription.go contains types for managing recurring subscriptions.
+// It provides structures for subscription management, billing cycles, pricing tiers,
+// and subscription lifecycle operations like pausing and cancellation.
 package developer
 
 // ================================

@@ -1,19 +1,29 @@
+// members.go contains types for managing merchant team members and invitations.
+// It provides structures for member management, role assignments, and team invitation workflows.
 package developer
 
 const (
-	MemberObject   = "member"
+	// MemberObject is the object type identifier for members
+	MemberObject = "member"
+	// MemberIDLength is the length of the member ID suffix
 	MemberIDLength = 24
+	// MemberIDPrefix is the prefix for member IDs
 	MemberIDPrefix = "member_"
 )
 
 const (
+	// InviteIDLength is the length of the invitation ID suffix
 	InviteIDLength = 36
+	// InviteIDPrefix is the prefix for invitation IDs
 	InviteIDPrefix = "invite_"
 )
 
 const (
-	MemberStatusActive   = "active"
+	// MemberStatusActive indicates the member has active access to the merchant account
+	MemberStatusActive = "active"
+	// MemberStatusInactive indicates the member's access has been revoked or suspended
 	MemberStatusInactive = "inactive"
+	// MemberStatusInviting indicates an invitation has been sent but not yet accepted
 	MemberStatusInviting = "inviting"
 )
 

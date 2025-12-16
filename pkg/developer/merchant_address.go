@@ -1,3 +1,6 @@
+// merchant_address.go contains types for managing merchant blockchain addresses.
+// It provides structures for tracking merchant cryptocurrency addresses used for
+// receiving payments and managing funds.
 package developer
 
 // MerchantAddress represents a merchant's blockchain address

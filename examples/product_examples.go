@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Product API.
+// Products represent items or services merchants sell, with support for variants,
+// options (like size/color), pricing, and inventory management.
 package main
 
 import (
@@ -1226,7 +1229,7 @@ func calculateSellingPlanPrice(client *martianpay.Client) {
 		basePrice = "29.99"
 	}
 
-	fmt.Print("Enter Currency (e.g., USD): ")
+	fmt.Print("Enter Currency (currently only supports USD): ")
 	var currency string
 	fmt.Scanln(&currency)
 	if currency == "" {

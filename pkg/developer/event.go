@@ -1,3 +1,6 @@
+// event.go contains types and utilities for webhook events and signature verification.
+// It provides event type constants, event data structures, and HMAC signature validation
+// for secure webhook processing.
 package developer
 
 import (
@@ -195,11 +198,13 @@ var (
 	ErrTooOld           = errors.New("timestamp wasn't within tolerance")
 )
 
+// signedHeader contains parsed timestamp and signatures from the webhook signature header
 type signedHeader struct {
 	timestamp  time.Time
 	signatures [][]byte
 }
 
+// parseSignatureHeader parses the Martian-Pay-Signature header into timestamp and signatures
 func parseSignatureHeader(header string) (*signedHeader, error) {
 	sh := &signedHeader{}
 
@@ -243,6 +248,7 @@ func parseSignatureHeader(header string) (*signedHeader, error) {
 	return sh, nil
 }
 
+// validatePayload verifies the webhook payload signature and checks timestamp tolerance
 func validatePayload(payload []byte, sigHeader string, secret string) error {
 	header, err := parseSignatureHeader(sigHeader)
 	if err != nil {

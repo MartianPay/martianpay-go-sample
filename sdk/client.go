@@ -1,3 +1,6 @@
+// Package martianpay provides the Go SDK implementation for the MartianPay API.
+// It enables interaction with the MartianPay payment platform, supporting payment intents,
+// customer management, refunds, payouts, and other payment-related operations.
 package martianpay
 
 import (
@@ -13,16 +16,24 @@ import (
 )
 
 const (
+	// DefaultAPIURL is the default base URL for the MartianPay API
 	DefaultAPIURL = "https://api.martianpay.com"
 )
 
-// Client represents a MartianPay API client
+// Client represents a MartianPay API client.
+// It contains the authentication credentials and configuration needed to access the API.
 type Client struct {
-	APIKey  string
-	BaseURL string
+	APIKey  string // API key for authentication
+	BaseURL string // Base URL for API requests, defaults to DefaultAPIURL
 }
 
-// NewClient creates a new MartianPay client
+// NewClient creates a new MartianPay client instance.
+//
+// Parameters:
+//   - apiKey: The MartianPay API key for authentication
+//
+// Returns:
+//   - *Client: An initialized client instance
 func NewClient(apiKey string) *Client {
 	return &Client{
 		APIKey:  apiKey,
@@ -30,15 +41,23 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
-// CommonResponse represents the common response structure
+// CommonResponse represents the standard API response structure.
+// All API responses follow this format for consistency.
 type CommonResponse struct {
-	Code      int             `json:"code"`       // Deprecated HTTP-level code
+	Code      int             `json:"code"`       // Deprecated HTTP-level status code
 	ErrorCode string          `json:"error_code"` // Business-level error code
-	Msg       string          `json:"msg"`        // Error message
-	Data      json.RawMessage `json:"data"`       // Response data
+	Msg       string          `json:"msg"`        // Error or response message
+	Data      json.RawMessage `json:"data"`       // Actual response data in JSON format
 }
 
-// getHTTPStatusText returns human-readable text for HTTP status codes
+// getHTTPStatusText returns a human-readable text description for HTTP status codes.
+// It provides standardized error messages for common HTTP error codes.
+//
+// Parameters:
+//   - statusCode: The HTTP status code to translate
+//
+// Returns:
+//   - string: Human-readable description of the status code
 func getHTTPStatusText(statusCode int) string {
 	switch statusCode {
 	case 400:
@@ -77,7 +96,17 @@ func getHTTPStatusText(statusCode int) string {
 	}
 }
 
-// sendRequest sends an HTTP request to the MartianPay API
+// sendRequest sends an HTTP request to the MartianPay API with JSON body.
+// It handles authentication, request/response serialization, and error checking.
+//
+// Parameters:
+//   - method: HTTP method (GET, POST, DELETE, etc.)
+//   - path: API endpoint path (e.g., "/v1/payment_intents")
+//   - body: Request body to be marshaled as JSON (can be nil)
+//   - response: Pointer to struct to unmarshal response data into (can be nil for DELETE operations)
+//
+// Returns:
+//   - error: nil on success, error describing the failure otherwise
 func (c *Client) sendRequest(method, path string, body interface{}, response interface{}) error {
 	var bodyReader io.Reader
 	if body != nil {
@@ -141,7 +170,18 @@ func (c *Client) sendRequest(method, path string, body interface{}, response int
 	return nil
 }
 
-// sendRequestWithQuery sends an HTTP GET request with query parameters
+// sendRequestWithQuery sends an HTTP request with query parameters.
+// It converts struct fields or map entries to URL query parameters and handles authentication.
+// Supports both struct types (using json/form tags) and map types for parameters.
+//
+// Parameters:
+//   - method: HTTP method (typically GET)
+//   - path: API endpoint path (e.g., "/v1/products")
+//   - params: Query parameters as a struct or map[string]string (can be nil)
+//   - response: Pointer to struct to unmarshal response data into (can be nil)
+//
+// Returns:
+//   - error: nil on success, error describing the failure otherwise
 func (c *Client) sendRequestWithQuery(method, path string, params interface{}, response interface{}) error {
 	urlStr := fmt.Sprintf("%s%s", c.BaseURL, path)
 

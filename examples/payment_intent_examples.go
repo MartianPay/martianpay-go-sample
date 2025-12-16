@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Payment Intent API.
+// Payment Intents represent the customer's payment transaction and can handle
+// both cryptocurrency and fiat payments (via Stripe integration).
 package main
 
 import (
@@ -9,7 +12,17 @@ import (
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
-// generateOrderID generates a random merchant order ID
+// generateOrderID generates a unique random merchant order ID.
+// This ID is used to track payments in your own system and can be used
+// to prevent duplicate payments.
+//
+// Parameters:
+//   - prefix: A prefix string to identify the order type (e.g., "order", "invoice")
+//
+// Returns:
+//   - A unique order ID in the format: prefix_timestamp_randomNumber
+//
+// Example: "order_1234567890_456789"
 func generateOrderID(prefix string) string {
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(1000000)

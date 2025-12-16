@@ -1,3 +1,6 @@
+// payment_link.go contains types for managing payment links and checkout pages.
+// It provides structures for creating payment links, managing product configurations,
+// and customizing the checkout experience for customers.
 package developer
 
 // ================================

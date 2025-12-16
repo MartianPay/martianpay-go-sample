@@ -1,3 +1,17 @@
+// Package developer contains data structures and types used by the MartianPay SDK.
+// It provides comprehensive types for managing payments, subscriptions, products,
+// customers, and other e-commerce operations through the MartianPay API.
+//
+// The package includes:
+//   - API authentication and webhook signature verification
+//   - Payment intent and charge management
+//   - Product catalog and variant management
+//   - Subscription and selling plan configuration
+//   - Customer management and authentication
+//   - Payout and payroll operations
+//   - Refund and settlement tracking
+//
+// For API documentation, visit: https://docs.martianpay.com
 package developer
 
 import (
@@ -16,26 +30,41 @@ import (
 )
 
 const (
+	// MartianPayApiVersion is the current API version used for requests and webhooks
 	MartianPayApiVersion = "2025-01-22"
 
-	WebhookEndpointIDLength  = 24
-	WebhookEndpointIDPrefix  = "wh_"
+	// WebhookEndpointIDLength is the length of the webhook endpoint ID suffix (excluding prefix)
+	WebhookEndpointIDLength = 24
+	// WebhookEndpointIDPrefix is the prefix for webhook endpoint IDs
+	WebhookEndpointIDPrefix = "wh_"
+	// WebhookEndpointPrefixKey is the prefix for webhook endpoint secret keys
 	WebhookEndpointPrefixKey = "whsec_"
-	WebhookEndpointObject    = "webhook_endpoint"
+	// WebhookEndpointObject is the object type identifier for webhook endpoints
+	WebhookEndpointObject = "webhook_endpoint"
 
+	// ApiKeyIDLength is the length of the API key ID suffix (excluding prefix)
 	ApiKeyIDLength = 24
+	// ApiKeyIDPrefix is the prefix for API key IDs
 	ApiKeyIDPrefix = "ak_"
-	ApiKeyObject   = "api_key"
+	// ApiKeyObject is the object type identifier for API keys
+	ApiKeyObject = "api_key"
 
+	// ApiKeyPrefixPublicTest is the prefix for publishable test API keys
 	ApiKeyPrefixPublicTest = "pk_test_"
+	// ApiKeyPrefixSecretTest is the prefix for secret test API keys
 	ApiKeyPrefixSecretTest = "sk_test_"
+	// ApiKeyPrefixPublicLive is the prefix for publishable live API keys
 	ApiKeyPrefixPublicLive = "pk_live_"
+	// ApiKeyPrefixSecretLive is the prefix for secret live API keys
 	ApiKeyPrefixSecretLive = "sk_live_"
+	// ApiKeyRandomPartLength is the length of the random part of API keys (in characters)
 	ApiKeyRandomPartLength = 96
 )
 
 const (
+	// DeveloperKeyTypePublic indicates a publishable/public API key that can be safely exposed in client-side code
 	DeveloperKeyTypePublic string = "public"
+	// DeveloperKeyTypeSecret indicates a secret API key that should only be used server-side
 	DeveloperKeyTypeSecret string = "secret"
 )
 
@@ -51,6 +80,8 @@ func GenerateHMACKey() (string, error) {
 	return WebhookEndpointPrefixKey + hex.EncodeToString(key), nil
 }
 
+// ComputeSignature computes an HMAC SHA256 signature for webhook payload verification
+// It combines the timestamp, a period separator, and the payload to generate the signature
 func ComputeSignature(t time.Time, payload []byte, secret string) []byte {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(fmt.Sprintf("%d", t.Unix())))
@@ -59,7 +90,7 @@ func ComputeSignature(t time.Time, payload []byte, secret string) []byte {
 	return mac.Sum(nil)
 }
 
-// GenerateApiKeyPair generates a pair of public and secret API keys
+// GenerateApiKey generates an API key of the specified type (public or secret) for test or live mode
 func GenerateApiKey(keyType string, isLive bool) (key string, err error) {
 	// Generate 96 random bytes for the key
 	keyRandomBytes := make([]byte, ApiKeyRandomPartLength/2)
@@ -88,6 +119,8 @@ func GenerateApiKey(keyType string, isLive bool) (key string, err error) {
 	return key, nil
 }
 
+// EncryptData encrypts data using AES-256-CBC encryption with PKCS7 padding
+// Returns the encrypted data as a base64-encoded string that includes the IV prefix
 func EncryptData(data string, encryptionKey string) (string, error) {
 	key := []byte(encryptionKey)
 	block, err := aes.NewCipher(key)
@@ -113,6 +146,8 @@ func EncryptData(data string, encryptionKey string) (string, error) {
 	return base64.StdEncoding.EncodeToString(result), nil
 }
 
+// DecryptData decrypts AES-256-CBC encrypted data with PKCS7 padding
+// Takes a base64-encoded encrypted string and returns the original plaintext
 func DecryptData(encryptedData string, encryptionKey string) (string, error) {
 	key := []byte(encryptionKey)
 	block, err := aes.NewCipher(key)
@@ -147,11 +182,16 @@ func DecryptData(encryptedData string, encryptionKey string) (string, error) {
 }
 
 const (
-	DeveloperStatusActive   = "active"
+	// DeveloperStatusActive indicates the resource is active and operational
+	DeveloperStatusActive = "active"
+	// DeveloperStatusInactive indicates the resource is inactive and not currently operational
 	DeveloperStatusInactive = "inactive"
-	DeveloperStatusDeleted  = "deleted"
+	// DeveloperStatusDeleted indicates the resource has been deleted
+	DeveloperStatusDeleted = "deleted"
+	// DeveloperStatusDeleting indicates the resource is in the process of being deleted
 	DeveloperStatusDeleting = "deleting"
-	DeveloperStatusUnknown  = "unknown"
+	// DeveloperStatusUnknown indicates the resource status is unknown
+	DeveloperStatusUnknown = "unknown"
 )
 
 // WebhookEndpointParams contains parameters for creating or updating a webhook endpoint
@@ -192,6 +232,7 @@ type WebhookEndpoint struct {
 	Status string `json:"status"`
 }
 
+// GenerateWebhookEndpointID generates a new unique webhook endpoint identifier with the 'wh_' prefix
 func GenerateWebhookEndpointID() string {
 	uniqueString := uniuri.NewLen(WebhookEndpointIDLength)
 	return WebhookEndpointIDPrefix + uniqueString
@@ -231,6 +272,7 @@ type ApiKey struct {
 	ExpiredAt int64 `json:"expired_at"`
 }
 
+// GenerateApiKeyID generates a new unique API key identifier with the 'ak_' prefix
 func GenerateApiKeyID() string {
 	uniqueString := uniuri.NewLen(ApiKeyIDLength)
 	return ApiKeyIDPrefix + uniqueString

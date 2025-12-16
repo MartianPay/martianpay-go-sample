@@ -1,3 +1,6 @@
+// selling_plan.go contains types for managing subscription selling plans.
+// It provides structures for defining recurring billing schedules, pricing tiers,
+// and subscription plan configurations.
 package developer
 
 // ================================
@@ -276,7 +279,7 @@ type CalculatePriceRequest struct {
 	VariantID string `json:"variant_id"`
 	// Base price of the variant
 	BasePrice string `json:"base_price"`
-	// Currency code (e.g., "USD", "EUR")
+	// Currency code (currently only supports "USD")
 	Currency string `json:"currency"`
 	// ID of the selling plan to calculate price for
 	PlanID string `json:"plan_id" binding:"required"`

@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Subscription API.
+// Subscriptions enable merchants to manage recurring billing for customers with automatic
+// payment collection, flexible billing cycles, and subscription lifecycle management.
 package main
 
 import (

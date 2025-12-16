@@ -1,8 +1,13 @@
+// role.go contains types for role-based access control (RBAC) in the MartianPay system.
+// It provides structures for defining roles, permissions, and access policies for team members.
 package developer
 
 const (
-	RoleObject   = "role"
+	// RoleObject is the object type identifier for roles
+	RoleObject = "role"
+	// RoleIDLength is the length of the role ID suffix
 	RoleIDLength = 24
+	// RoleIDPrefix is the prefix for role IDs
 	RoleIDPrefix = "role_"
 )
 

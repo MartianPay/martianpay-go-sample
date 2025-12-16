@@ -1,3 +1,6 @@
+// payout.go contains types for managing cryptocurrency payouts and currency swaps.
+// It provides structures for creating payouts, tracking payout status, and managing
+// currency conversions through the MartianPay payout system.
 package developer
 
 import (
@@ -154,6 +157,7 @@ type Payout struct {
 	Metadata map[string]string `json:"metadata"`
 }
 
+// GeneratePayoutId generates a new unique payout identifier with the 'payout_' prefix
 func GeneratePayoutId() string {
 	uniqueString := uniuri.NewLen(PayoutIdLength)
 	return PayoutIdPrefix + uniqueString

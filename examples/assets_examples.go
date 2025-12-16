@@ -1,3 +1,17 @@
+// Package main provides examples for the MartianPay Assets API.
+// Assets represent the cryptocurrencies and fiat currencies that merchants can accept
+// for payments or use for payouts. Each asset has specific properties like network,
+// decimals, and availability for payments.
+//
+// Asset Types:
+//   - Cryptocurrency: BTC, ETH, USDC, USDT, SOL, etc. (on various networks)
+//   - Fiat Currency: USD (currently only supports USD via payment processors like Stripe)
+//
+// Key Properties:
+//   - Payable: Whether the asset can be used for accepting payments
+//   - Network: Blockchain network (Ethereum, Solana, Polygon, etc.)
+//   - Mainnet/Testnet: Production or testing environment
+//   - Contract Address: Smart contract address for tokens
 package main
 
 import (
@@ -9,7 +23,24 @@ import (
 
 // Assets Examples
 
-// listAssets retrieves all assets enabled for the merchant
+// listAssets retrieves and displays all assets enabled for the merchant account.
+// This shows assets that are currently configured and available for use.
+//
+// Displayed Information:
+//   - Asset ID and display name
+//   - Coin symbol (BTC, ETH, USDC, etc.)
+//   - Decimals (precision for amounts)
+//   - Payable status (can accept payments)
+//   - Network and contract details (for crypto)
+//   - Provider information (for fiat)
+//
+// Use Cases:
+//   - Check which assets are enabled for your account
+//   - Identify payable assets for payment intents
+//   - View asset configuration details
+//
+// API Endpoints Used:
+//   - GET /v1/assets (enabled assets only)
 func listAssets(client *martianpay.Client) {
 	fmt.Println("Listing Enabled Assets...")
 
@@ -101,7 +132,22 @@ func listAssets(client *martianpay.Client) {
 	}
 }
 
-// getAllAssets retrieves all available assets (including disabled ones)
+// getAllAssets retrieves all available assets including those not yet enabled.
+// This is useful for discovering new assets that can be added to your account.
+//
+// Features:
+//   - Shows both enabled and disabled assets
+//   - Groups assets by network
+//   - Allows filtering by crypto/fiat/payable
+//   - Interactive display options
+//
+// Use Cases:
+//   - Discover available cryptocurrencies
+//   - Plan asset configuration
+//   - Compare mainnet vs testnet options
+//
+// API Endpoints Used:
+//   - GET /v1/assets/all (all available assets)
 func getAllAssets(client *martianpay.Client) {
 	fmt.Println("Getting All Available Assets...")
 
@@ -203,7 +249,23 @@ func getAllAssets(client *martianpay.Client) {
 	fmt.Println("\n" + strings.Repeat("=", 80))
 }
 
-// listAssetFees retrieves network fee information for all assets
+// listAssetFees retrieves network fee information for cryptocurrency withdrawals.
+// Network fees are charged by blockchains for processing transactions.
+//
+// Displayed Information:
+//   - Minimum payout amount (smallest withdrawal allowed)
+//   - Network fee amount (cost to send transactions)
+//   - Fees by blockchain network
+//
+// Use Cases:
+//   - Calculate payout costs
+//   - Determine minimum withdrawal amounts
+//   - Compare fees across networks
+//
+// Note: Network fees vary by blockchain and can change based on network congestion.
+//
+// API Endpoints Used:
+//   - GET /v1/assets/fees
 func listAssetFees(client *martianpay.Client) {
 	fmt.Println("Listing Asset Network Fees...")
 
@@ -239,7 +301,21 @@ func listAssetFees(client *martianpay.Client) {
 	fmt.Println("\n" + strings.Repeat("=", 80))
 }
 
-// showCryptoAssetsByNetwork groups and displays crypto assets by blockchain network
+// showCryptoAssetsByNetwork organizes and displays cryptocurrencies grouped by network.
+// This helps visualize which tokens are available on each blockchain.
+//
+// Features:
+//   - Groups assets by blockchain (Ethereum, Solana, Polygon, etc.)
+//   - Shows payable status for each asset
+//   - Counts assets per network
+//
+// Use Cases:
+//   - Select optimal network for payments
+//   - View multi-chain token availability
+//   - Compare network options
+//
+// API Endpoints Used:
+//   - GET /v1/assets/all
 func showCryptoAssetsByNetwork(client *martianpay.Client) {
 	fmt.Println("Showing Crypto Assets Grouped by Network...")
 
@@ -278,7 +354,21 @@ func showCryptoAssetsByNetwork(client *martianpay.Client) {
 	}
 }
 
-// showPayableAssets displays only assets that can be used for payments
+// showPayableAssets displays only assets that can be used for accepting payments.
+// These are the currencies/tokens that customers can use to pay you.
+//
+// Features:
+//   - Filters to show only payable assets
+//   - Separates crypto and fiat assets
+//   - Shows network and provider information
+//
+// Use Cases:
+//   - List payment options for customers
+//   - Configure payment intent currencies
+//   - Plan payment method offerings
+//
+// API Endpoints Used:
+//   - GET /v1/assets (with payable filter)
 func showPayableAssets(client *martianpay.Client) {
 	fmt.Println("Showing Payable Assets...")
 
@@ -325,7 +415,26 @@ func showPayableAssets(client *martianpay.Client) {
 	fmt.Println(strings.Repeat("=", 80))
 }
 
-// compareMainnetVsTestnet compares mainnet and testnet assets
+// compareMainnetVsTestnet compares production and testing cryptocurrency assets.
+// Mainnet assets use real blockchain networks, while testnet assets use test networks.
+//
+// Mainnet Assets:
+//   - Production blockchain networks
+//   - Real cryptocurrency with value
+//   - Used for actual transactions
+//
+// Testnet Assets:
+//   - Test blockchain networks (e.g., Sepolia, Goerli)
+//   - Test cryptocurrency (no real value)
+//   - Used for development and testing
+//
+// Use Cases:
+//   - Choose between production and testing environments
+//   - Development and testing workflows
+//   - Network availability comparison
+//
+// API Endpoints Used:
+//   - GET /v1/assets/all
 func compareMainnetVsTestnet(client *martianpay.Client) {
 	fmt.Println("Comparing Mainnet vs Testnet Assets...")
 

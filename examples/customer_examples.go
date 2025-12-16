@@ -1,3 +1,6 @@
+// Package main provides examples for the MartianPay Customer API.
+// Customers represent buyers in your system and can have saved payment methods,
+// making it easy to process repeat purchases.
 package main
 
 import (
@@ -9,7 +12,16 @@ import (
 	martianpay "github.com/MartianPay/martianpay-go-sample/sdk"
 )
 
-// generateRandomEmail generates a random email address
+// generateRandomEmail generates a unique random email address for testing.
+// This is useful for creating test customers without email collisions.
+//
+// Parameters:
+//   - prefix: A prefix string to identify the customer type (e.g., "customer", "test_user")
+//
+// Returns:
+//   - A unique email address in the format: prefix_timestamp_randomNumber@example.com
+//
+// Example: "customer_1234567890_456789@example.com"
 func generateRandomEmail(prefix string) string {
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(1000000)
@@ -18,6 +30,19 @@ func generateRandomEmail(prefix string) string {
 }
 
 // Customer Examples
+
+// createAndUpdateCustomer demonstrates creating a new customer and then updating their information.
+// This is a common workflow when managing customer data.
+//
+// Steps:
+// 1. Create a new customer with email, name, and description
+// 2. Display the created customer details
+// 3. Update the customer's name
+// 4. Display the updated customer details
+//
+// API Endpoints Used:
+//   - POST /v1/customers (create)
+//   - PUT /v1/customers/:id (update)
 func createAndUpdateCustomer(client *martianpay.Client) {
 	fmt.Println("Creating and Updating Customer...")
 
@@ -62,6 +87,17 @@ func createAndUpdateCustomer(client *martianpay.Client) {
 	fmt.Printf("  Name: %s\n", *updateResp.Name)
 }
 
+// getCustomer retrieves and displays details of a specific customer by ID.
+// The function first lists available customers to help with ID selection.
+//
+// Steps:
+// 1. List recent customers for reference
+// 2. Prompt user to select a customer (by number or ID)
+// 3. Retrieve and display customer details including balance and statistics
+//
+// API Endpoints Used:
+//   - GET /v1/customers (list)
+//   - GET /v1/customers/:id (get)
 func getCustomer(client *martianpay.Client) {
 	fmt.Println("Getting Customer...")
 	fmt.Println("  Fetching customers...")
@@ -140,6 +176,16 @@ func getCustomer(client *martianpay.Client) {
 	fmt.Printf("  Total Payment: %.2f\n", response.TotalPayment)
 }
 
+// listCustomers retrieves and displays a paginated list of customers.
+// Useful for viewing all customers in your merchant account.
+//
+// Features:
+//   - Pagination support (page and page size)
+//   - Displays customer ID, email, and name
+//   - Shows total count of customers
+//
+// API Endpoints Used:
+//   - GET /v1/customers (list with pagination)
 func listCustomers(client *martianpay.Client) {
 	fmt.Println("Listing Customers...")
 
@@ -171,6 +217,21 @@ func listCustomers(client *martianpay.Client) {
 	}
 }
 
+// deleteCustomer demonstrates deleting a customer from the system.
+// For demonstration purposes, this function creates a test customer first,
+// then immediately deletes it.
+//
+// Note: In production, only delete customers when necessary (e.g., GDPR compliance).
+// Deleted customers cannot be recovered.
+//
+// Steps:
+// 1. Create a test customer
+// 2. Delete the newly created customer
+// 3. Confirm successful deletion
+//
+// API Endpoints Used:
+//   - POST /v1/customers (create test customer)
+//   - DELETE /v1/customers/:id (delete)
 func deleteCustomer(client *martianpay.Client) {
 	fmt.Println("Deleting Customer...")
 
@@ -200,6 +261,22 @@ func deleteCustomer(client *martianpay.Client) {
 	fmt.Printf("✓ Customer Deleted: %s\n", createResp.ID)
 }
 
+// listCustomerPaymentMethods retrieves all saved payment methods for a customer.
+// Saved payment methods allow for faster checkout on repeat purchases.
+//
+// Payment methods include:
+//   - Credit/debit cards (Stripe)
+//   - Bank accounts
+//   - Other payment methods supported by your configuration
+//
+// Displayed Information:
+//   - Payment method ID
+//   - Card brand (Visa, Mastercard, etc.)
+//   - Last 4 digits of card
+//   - Expiration date
+//
+// API Endpoints Used:
+//   - GET /v1/customers/:id/payment_methods
 func listCustomerPaymentMethods(client *martianpay.Client) {
 	fmt.Println("Listing Customer Payment Methods...")
 	fmt.Print("Enter Customer ID: ")
