@@ -18,7 +18,7 @@ Official Go SDK for the MartianPay payment platform.
 - **Products**: Create, update, retrieve, list, and delete products with variants and selling plans
 - **Selling Plans**: Manage subscription and recurring payment plans with pricing strategies
 - **Payment Links**: Create, update, retrieve, list, and delete payment links for products
-- **Subscriptions**: Manage customer subscriptions, pause, resume, and cancel subscriptions
+- **Subscriptions**: Manage customer subscriptions with plan changes (upgrade/downgrade), proration, pause, resume, and cancel
 - **Crypto Payments**: Support for crypto payment methods (USDT, USDC, ETH, etc.)
 - **Fiat/Card Payments**: Support for card payments via Stripe (new card and saved card)
 - **Webhook Events**: Receive and verify webhook events for real-time updates
@@ -124,7 +124,7 @@ Select from organized categories:
 8. **Balance Examples** - View merchant balances across currencies and asset types
 9. **Product Examples** - Create and manage products with variants and selling plans
 10. **Payment Link Examples** - Create and manage payment links for products
-11. **Subscription Examples** - Manage customer subscriptions and recurring payments
+11. **Subscription Examples** - Manage subscriptions with plan changes, proration preview, pause/resume
 12. **Webhook Examples** - Test webhook event handling for real-time updates
 
 ## Keeping SDK Up to Date

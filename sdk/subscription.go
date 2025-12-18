@@ -103,3 +103,59 @@ func (c *Client) ResumeSubscription(subscriptionID string) (*developer.Subscript
 	}
 	return &resp, nil
 }
+
+// UpdateSubscription updates a subscription's plan (upgrade or downgrade).
+// Supports automatic proration calculation for mid-cycle plan changes.
+//
+// For upgrades (new price > current price):
+//   - Applied immediately
+//   - Customer charged prorated difference today
+//   - Billing cycle can be reset with billing_cycle_anchor: "now"
+//
+// For downgrades (new price < current price):
+//   - Scheduled as pending update
+//   - Takes effect at end of current billing period
+//   - Customer continues on current plan until effective_date
+//
+// Parameters:
+//   - subscriptionID: The unique identifier of the subscription to update
+//   - params: Update parameters including new selling plan, proration behavior, etc.
+//
+// Returns:
+//   - *developer.SubscriptionDetails: Updated subscription details with proration info
+//   - error: nil on success, error on failure
+func (c *Client) UpdateSubscription(subscriptionID string, params *developer.UpdateSubscriptionPlanRequest) (*developer.SubscriptionDetails, error) {
+	path := fmt.Sprintf("/v1/subscriptions/%s", subscriptionID)
+	var resp developer.SubscriptionDetails
+	err := c.sendRequest("POST", path, params, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// PreviewSubscriptionUpdate previews the proration calculation for a plan change.
+// Use this to show customers what they'll be charged before confirming the change.
+//
+// The preview does NOT:
+//   - Modify the subscription
+//   - Create invoices
+//   - Charge the customer
+//   - Send any webhooks
+//
+// Parameters:
+//   - subscriptionID: The unique identifier of the subscription
+//   - params: Preview parameters (same as UpdateSubscription)
+//
+// Returns:
+//   - *developer.SubscriptionDetails: Preview with proration calculation (applied=false)
+//   - error: nil on success, error on failure
+func (c *Client) PreviewSubscriptionUpdate(subscriptionID string, params *developer.UpdateSubscriptionPlanRequest) (*developer.SubscriptionDetails, error) {
+	path := fmt.Sprintf("/v1/subscriptions/%s/preview", subscriptionID)
+	var resp developer.SubscriptionDetails
+	err := c.sendRequest("POST", path, params, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}

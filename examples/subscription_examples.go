@@ -587,3 +587,221 @@ func formatTimestamp(timestamp int64) string {
 	t := time.Unix(timestamp, 0)
 	return t.Format("2006-01-02 15:04:05")
 }
+
+// updateSubscription updates a subscription's plan (upgrade or downgrade)
+func updateSubscription(client *martianpay.Client) {
+	fmt.Println("Updating Subscription Plan...")
+	fmt.Print("Enter Subscription ID: ")
+
+	var id string
+	fmt.Scanln(&id)
+	if id == "" {
+		fmt.Println("✗ Subscription ID is required")
+		return
+	}
+
+	fmt.Print("Enter new Selling Plan ID: ")
+	var sellingPlanID string
+	fmt.Scanln(&sellingPlanID)
+	if sellingPlanID == "" {
+		fmt.Println("✗ Selling Plan ID is required")
+		return
+	}
+
+	fmt.Println("\nProration behaviors:")
+	fmt.Println("  1. always_invoice - Create and charge proration invoice immediately (recommended for upgrades)")
+	fmt.Println("  2. create_prorations - Add proration items to next invoice")
+	fmt.Println("  3. none - No proration calculation")
+	fmt.Print("\nSelect behavior (1-3, default: 1): ")
+
+	var behaviorChoice string
+	fmt.Scanln(&behaviorChoice)
+
+	prorationBehavior := developer.ProrationBehaviorAlwaysInvoice
+	switch behaviorChoice {
+	case "2":
+		prorationBehavior = developer.ProrationBehaviorCreateProrations
+	case "3":
+		prorationBehavior = developer.ProrationBehaviorNone
+	}
+
+	fmt.Println("\nBilling cycle anchor:")
+	fmt.Println("  1. now - Reset billing cycle to today")
+	fmt.Println("  2. unchanged - Keep existing billing cycle")
+	fmt.Print("\nSelect option (1-2, default: 2): ")
+
+	var anchorChoice string
+	fmt.Scanln(&anchorChoice)
+
+	billingCycleAnchor := developer.BillingCycleAnchorUnchanged
+	if anchorChoice == "1" {
+		billingCycleAnchor = developer.BillingCycleAnchorNow
+	}
+
+	req := &developer.UpdateSubscriptionPlanRequest{
+		PrimaryVariant: &developer.SubscriptionItemUpdate{
+			SellingPlanID: sellingPlanID,
+		},
+		ProrationBehavior:  &prorationBehavior,
+		BillingCycleAnchor: &billingCycleAnchor,
+	}
+
+	response, err := client.UpdateSubscription(id, req)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\n✓ Subscription Updated:\n")
+	fmt.Printf("  ID: %s\n", response.ID)
+	fmt.Printf("  Status: %s\n", response.Status)
+
+	if response.Applied != nil && *response.Applied {
+		fmt.Printf("  ✓ Change Applied Immediately\n")
+	} else {
+		fmt.Printf("  ⏳ Change Scheduled\n")
+	}
+
+	if response.IsUpgrade != nil {
+		if *response.IsUpgrade {
+			fmt.Printf("  Change Type: Upgrade\n")
+		} else {
+			fmt.Printf("  Change Type: Downgrade\n")
+		}
+	}
+
+	if response.EffectiveDate != nil {
+		fmt.Printf("  Effective Date: %s\n", formatTimestamp(*response.EffectiveDate))
+	}
+
+	if response.ChargeToday != nil && *response.ChargeToday != "" && *response.ChargeToday != "0" {
+		fmt.Printf("  Charge Today: $%s\n", *response.ChargeToday)
+	}
+
+	if response.ProrationCredit != nil && *response.ProrationCredit != "" {
+		fmt.Printf("  Proration Credit: $%s\n", *response.ProrationCredit)
+	}
+
+	// Show proration details
+	if response.ProrationDetails != nil {
+		fmt.Printf("\n  Proration Details:\n")
+		fmt.Printf("    Current Price: %s cents\n", response.ProrationDetails.CurrentPrice)
+		fmt.Printf("    Target Price: %s cents\n", response.ProrationDetails.TargetPrice)
+		fmt.Printf("    Days Remaining: %d / %d\n",
+			response.ProrationDetails.DaysRemaining,
+			response.ProrationDetails.TotalDays)
+		fmt.Printf("    Credit Amount: %s cents\n", response.ProrationDetails.CreditedAmount)
+		fmt.Printf("    Charge Amount: %s cents\n", response.ProrationDetails.ChargedAmount)
+		fmt.Printf("    Net Amount: %s cents\n", response.ProrationDetails.NetAmount)
+	}
+
+	// Show pending update if downgrade
+	if response.PendingUpdate != nil {
+		fmt.Printf("\n  Pending Update (Scheduled Downgrade):\n")
+		if response.PendingUpdate.TargetSellingPlanName != nil {
+			fmt.Printf("    Target Plan: %s\n", *response.PendingUpdate.TargetSellingPlanName)
+		}
+		fmt.Printf("    Effective Date: %s\n", formatTimestamp(response.PendingUpdate.EffectiveDate))
+		if response.PendingUpdate.NextChargeAmount != nil {
+			fmt.Printf("    Next Charge: $%s\n", *response.PendingUpdate.NextChargeAmount)
+		}
+	}
+
+	if response.NextChargeAmount != nil {
+		fmt.Printf("\n  Next Charge: %s\n", *response.NextChargeAmountDisplay)
+	}
+	if response.NextChargeDate != nil {
+		fmt.Printf("  Next Charge Date: %s\n", formatTimestamp(*response.NextChargeDate))
+	}
+}
+
+// previewSubscriptionUpdate previews a subscription plan change without applying it
+func previewSubscriptionUpdate(client *martianpay.Client) {
+	fmt.Println("Previewing Subscription Plan Change...")
+	fmt.Print("Enter Subscription ID: ")
+
+	var id string
+	fmt.Scanln(&id)
+	if id == "" {
+		fmt.Println("✗ Subscription ID is required")
+		return
+	}
+
+	fmt.Print("Enter new Selling Plan ID to preview: ")
+	var sellingPlanID string
+	fmt.Scanln(&sellingPlanID)
+	if sellingPlanID == "" {
+		fmt.Println("✗ Selling Plan ID is required")
+		return
+	}
+
+	prorationBehavior := developer.ProrationBehaviorAlwaysInvoice
+	billingCycleAnchor := developer.BillingCycleAnchorUnchanged
+
+	req := &developer.UpdateSubscriptionPlanRequest{
+		PrimaryVariant: &developer.SubscriptionItemUpdate{
+			SellingPlanID: sellingPlanID,
+		},
+		ProrationBehavior:  &prorationBehavior,
+		BillingCycleAnchor: &billingCycleAnchor,
+	}
+
+	response, err := client.PreviewSubscriptionUpdate(id, req)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\n✓ Subscription Plan Change Preview:\n")
+	fmt.Printf("  (No changes have been made - this is a preview only)\n\n")
+	fmt.Printf("  Subscription ID: %s\n", response.ID)
+	fmt.Printf("  Current Status: %s\n", response.Status)
+
+	if response.IsUpgrade != nil {
+		if *response.IsUpgrade {
+			fmt.Printf("\n  📈 This would be an UPGRADE\n")
+		} else {
+			fmt.Printf("\n  📉 This would be a DOWNGRADE\n")
+		}
+	}
+
+	if response.EffectiveDate != nil {
+		fmt.Printf("  Effective Date: %s\n", formatTimestamp(*response.EffectiveDate))
+	}
+
+	// Show what would be charged
+	fmt.Printf("\n  Billing Preview:\n")
+	if response.ChargeToday != nil && *response.ChargeToday != "" && *response.ChargeToday != "0" {
+		fmt.Printf("    Would Charge Today: $%s\n", *response.ChargeToday)
+	} else {
+		fmt.Printf("    Would Charge Today: $0.00 (no immediate charge)\n")
+	}
+
+	if response.ProrationCredit != nil && *response.ProrationCredit != "" {
+		fmt.Printf("    Proration Credit: $%s\n", *response.ProrationCredit)
+	}
+
+	// Show proration details
+	if response.ProrationDetails != nil {
+		fmt.Printf("\n  Proration Calculation:\n")
+		fmt.Printf("    Current Price: %s cents\n", response.ProrationDetails.CurrentPrice)
+		fmt.Printf("    Target Price: %s cents\n", response.ProrationDetails.TargetPrice)
+		fmt.Printf("    Days Remaining: %d / %d total days\n",
+			response.ProrationDetails.DaysRemaining,
+			response.ProrationDetails.TotalDays)
+		fmt.Printf("    Credit (unused time): %s cents\n", response.ProrationDetails.CreditedAmount)
+		fmt.Printf("    Charge (new plan): %s cents\n", response.ProrationDetails.ChargedAmount)
+		fmt.Printf("    Net Amount: %s cents\n", response.ProrationDetails.NetAmount)
+	}
+
+	// Show future billing info
+	if response.NextChargeAmount != nil {
+		fmt.Printf("\n  Future Billing:\n")
+		fmt.Printf("    Next Charge Amount: %s\n", *response.NextChargeAmountDisplay)
+	}
+	if response.NextChargeDate != nil {
+		fmt.Printf("    Next Charge Date: %s\n", formatTimestamp(*response.NextChargeDate))
+	}
+
+	fmt.Printf("\n  Note: Use 'Update Subscription' to apply this change.\n")
+}

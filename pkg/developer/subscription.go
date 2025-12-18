@@ -1,6 +1,3 @@
-// subscription.go contains types for managing recurring subscriptions.
-// It provides structures for subscription management, billing cycles, pricing tiers,
-// and subscription lifecycle operations like pausing and cancellation.
 package developer
 
 // ================================
@@ -285,4 +282,143 @@ type SubscriptionDetails struct {
 	PaymentMethodBrand *string `json:"payment_method_brand,omitempty"`
 	// PaymentMethodLast4 is the payment method's last 4 digits for display (fetched via JOIN/lookup, not stored)
 	PaymentMethodLast4 *string `json:"payment_method_last4,omitempty"`
+	// PendingUpdate contains scheduled plan changes (e.g., downgrade at period end)
+	PendingUpdate *SubscriptionPendingUpdate `json:"pending_update,omitempty"`
+	// ProrationBehavior indicates how proration was handled for the last plan change
+	ProrationBehavior *string `json:"proration_behavior,omitempty"`
+	// ProrationDate is the timestamp used for proration calculation
+	ProrationDate *int64 `json:"proration_date,omitempty"`
+
+	// === Proration fields (populated for update/preview operations) ===
+	// Applied indicates if the change was actually applied (true=update, false=preview, nil=GET)
+	Applied *bool `json:"applied,omitempty"`
+	// IsUpgrade indicates if this is an upgrade (true) or downgrade (false)
+	IsUpgrade *bool `json:"is_upgrade,omitempty"`
+	// EffectiveDate is the Unix timestamp when the change takes/would take effect
+	EffectiveDate *int64 `json:"effective_date,omitempty"`
+	// ProrationCredit is the credit amount for unused time on old plan
+	ProrationCredit *string `json:"proration_credit,omitempty"`
+	// ChargeToday is the net amount charged/to be charged today
+	ChargeToday *string `json:"charge_today,omitempty"`
+	// NextChargeDate is the Unix timestamp of the next billing date
+	NextChargeDate *int64 `json:"next_charge_date,omitempty"`
+	// ProrationDetails contains detailed proration breakdown (for update/preview)
+	ProrationDetails *ProrationDetails `json:"proration_details,omitempty"`
+}
+
+// SubscriptionPendingUpdate represents a scheduled subscription change
+type SubscriptionPendingUpdate struct {
+	// TargetSellingPlanID is the selling plan to change to
+	TargetSellingPlanID string `json:"target_selling_plan_id"`
+	// TargetSellingPlanName is the name of the target selling plan
+	TargetSellingPlanName *string `json:"target_selling_plan_name,omitempty"`
+	// TargetVariantID is the variant to change to (optional)
+	TargetVariantID *string `json:"target_variant_id,omitempty"`
+	// TargetVariantTitle is the display title of the target variant
+	TargetVariantTitle *string `json:"target_variant_title,omitempty"`
+	// TargetVariantPrice is the base price of the target variant (formatted)
+	TargetVariantPrice *string `json:"target_variant_price,omitempty"`
+	// TargetVariantOptionValues contains the option values of the target variant
+	TargetVariantOptionValues map[string]string `json:"target_variant_option_values,omitempty"`
+	// NextChargeAmount is the calculated amount that will be charged after the change takes effect
+	NextChargeAmount *string `json:"next_charge_amount,omitempty"`
+	// ChangeType indicates whether this is an "upgrade" or "downgrade"
+	ChangeType *string `json:"change_type,omitempty"`
+	// EffectiveDate is the Unix timestamp when the change will take effect
+	EffectiveDate int64 `json:"effective_date"`
+	// ProrationBehavior indicates how proration will be handled
+	ProrationBehavior string `json:"proration_behavior"`
+	// BillingCycleAnchor controls billing cycle timing ("now", "unchanged") (optional)
+	BillingCycleAnchor *string `json:"billing_cycle_anchor,omitempty"`
+	// ProrationDate is the Unix timestamp used for proration calculation (optional)
+	ProrationDate *int64 `json:"proration_date,omitempty"`
+	// Metadata contains additional information for this pending update
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	// ScheduledAt is the Unix timestamp when this update was scheduled
+	ScheduledAt int64 `json:"scheduled_at"`
+}
+
+// ================================
+// Subscription Price Change APIs
+// ================================
+
+// ProrationBehavior constants
+const (
+	// ProrationBehaviorAlwaysInvoice creates invoice immediately with proration
+	ProrationBehaviorAlwaysInvoice = "always_invoice"
+	// ProrationBehaviorCreateProrations creates proration items added to next invoice
+	ProrationBehaviorCreateProrations = "create_prorations"
+	// ProrationBehaviorNone does not create any proration
+	ProrationBehaviorNone = "none"
+)
+
+// BillingCycleAnchor constants
+const (
+	// BillingCycleAnchorNow resets billing cycle to current time
+	BillingCycleAnchorNow = "now"
+	// BillingCycleAnchorUnchanged keeps existing billing cycle date
+	BillingCycleAnchorUnchanged = "unchanged"
+)
+
+// UpdateSubscriptionPlanRequest updates or previews a subscription plan change (upgrade/downgrade)
+// This request type is used by both update and preview endpoints
+type UpdateSubscriptionPlanRequest struct {
+	// SubscriptionID is the subscription ID from URL path
+	SubscriptionID string `json:"-"`
+	// PrimaryVariant is the primary variant selection to update
+	PrimaryVariant *SubscriptionItemUpdate `json:"primary_variant,omitempty"`
+	// Addons is the optional list of addon variant selections (reserved for future use)
+	Addons []SubscriptionItemUpdate `json:"addons,omitempty"`
+	// ProrationBehavior controls how proration is handled ("always_invoice", "create_prorations", "none")
+	ProrationBehavior *string `json:"proration_behavior,omitempty"`
+	// BillingCycleAnchor controls billing cycle timing ("now", "unchanged")
+	BillingCycleAnchor *string `json:"billing_cycle_anchor,omitempty"`
+	// ProrationDate is the Unix timestamp for custom proration calculation (backdating)
+	ProrationDate *int64 `json:"proration_date,omitempty"`
+	// Metadata is a set of key-value pairs for storing additional information (ignored in preview)
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// SubscriptionItemUpdate represents a subscription item update
+type SubscriptionItemUpdate struct {
+	// ID is the existing subscription item ID (optional for updates)
+	ID *string `json:"id,omitempty"`
+	// SellingPlanID is the new selling plan ID to switch to
+	SellingPlanID string `json:"selling_plan_id" binding:"required"`
+	// VariantID is the new variant ID (optional)
+	VariantID *string `json:"variant_id,omitempty"`
+	// Quantity is the quantity (default: 1)
+	Quantity *int `json:"quantity,omitempty"`
+}
+
+// PreviewSubscriptionUpdateRequest is an alias for UpdateSubscriptionPlanRequest
+// Deprecated: Use UpdateSubscriptionPlanRequest instead
+type PreviewSubscriptionUpdateRequest = UpdateSubscriptionPlanRequest
+
+// SubscriptionUpdateResponse is deprecated - use SubscriptionDetails directly
+// The proration fields are now included in SubscriptionDetails
+// Deprecated: Use SubscriptionDetails instead
+type SubscriptionUpdateResponse = SubscriptionDetails
+
+// SubscriptionPreviewResponse is deprecated - use SubscriptionDetails directly
+// The proration fields are now included in SubscriptionDetails
+// Deprecated: Use SubscriptionDetails instead
+type SubscriptionPreviewResponse = SubscriptionDetails
+
+// ProrationDetails contains detailed proration calculation breakdown
+type ProrationDetails struct {
+	// CreditedAmount is the credit for unused time on old plan (in cents)
+	CreditedAmount string `json:"credited_amount"`
+	// ChargedAmount is the charge for new plan (in cents)
+	ChargedAmount string `json:"charged_amount"`
+	// NetAmount is the final net amount (charged - credited) (in cents)
+	NetAmount string `json:"net_amount"`
+	// DaysRemaining is the number of days remaining in current period
+	DaysRemaining int `json:"days_remaining"`
+	// TotalDays is the total days in the current period
+	TotalDays int `json:"total_days"`
+	// CurrentPrice is the current plan price (in cents)
+	CurrentPrice string `json:"current_price"`
+	// TargetPrice is the target plan price (in cents)
+	TargetPrice string `json:"target_price"`
 }

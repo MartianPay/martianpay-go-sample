@@ -259,6 +259,8 @@ func handleCategory(category int, scanner *bufio.Scanner) {
 				"Pause Subscription",
 				"Pause Subscription with Auto-Resume",
 				"Resume Subscription",
+				"Update Subscription (Plan Change)",
+				"Preview Subscription Update",
 			}
 		case 12:
 			categoryName = "Webhook Examples"
@@ -327,8 +329,8 @@ func getExampleNumber(category, choice int) int {
 		8:  43, // Balance: 44-48
 		9:  48, // Product: 49-66 (7 product + 11 selling plan)
 		10: 66, // Payment Link: 67-73
-		11: 73, // Subscription: 74-82 (9 examples)
-		12: 82, // Webhook: 83
+		11: 73, // Subscription: 74-84 (11 examples)
+		12: 84, // Webhook: 85
 	}
 
 	return categoryOffsets[category] + choice
@@ -515,6 +517,10 @@ func runExample(choice int) {
 	case 82:
 		resumeSubscription(client)
 	case 83:
+		updateSubscription(client)
+	case 84:
+		previewSubscriptionUpdate(client)
+	case 85:
 		startWebhookServer()
 	default:
 		fmt.Println("Invalid choice")

@@ -177,6 +177,8 @@ After selecting a category, you'll see specific examples:
 7. Pause Subscription
 8. Pause Subscription with Auto-Resume
 9. Resume Subscription
+10. Update Subscription (Plan Change)
+11. Preview Subscription Update
 
 **Webhook Examples:**
 1. Start Webhook Event Receiver Server
