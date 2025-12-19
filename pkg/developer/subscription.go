@@ -369,11 +369,52 @@ type UpdateSubscriptionPlanRequest struct {
 	PrimaryVariant *SubscriptionItemUpdate `json:"primary_variant,omitempty"`
 	// Addons is the optional list of addon variant selections (reserved for future use)
 	Addons []SubscriptionItemUpdate `json:"addons,omitempty"`
-	// ProrationBehavior controls how proration is handled ("always_invoice", "create_prorations", "none")
+	// ProrationBehavior controls how proration charges are handled during plan changes.
+	// Values:
+	// - "always_invoice": Create an invoice immediately for the prorated amount. Customer is charged right away.
+	// - "create_prorations": Create proration line items but defer to the next billing cycle (no immediate charge).
+	// - "none": No proration calculation. Customer keeps access until period end, new plan starts next cycle.
+	//
+	// Default behavior (when not specified):
+	// - Upgrades: "always_invoice" (immediate charge with credit for unused time on old plan)
+	// - Downgrades: "none" (no charge, change takes effect at period end)
+	//
+	// Scenario Examples:
+	// | Scenario          | proration_behavior | billing_cycle_anchor | Immediate Charge | Credit | Billing Date Changes |
+	// |-------------------|-------------------|---------------------|------------------|--------|---------------------|
+	// | Immediate Upgrade | always_invoice    | now                 | Yes              | Yes    | Yes (reset to now)  |
+	// | Deferred Upgrade  | create_prorations | unchanged           | No               | Yes    | No (keeps date)     |
+	// | Downgrade         | none              | (ignored)           | No               | No     | No (period end)     |
 	ProrationBehavior *string `json:"proration_behavior,omitempty"`
-	// BillingCycleAnchor controls billing cycle timing ("now", "unchanged")
+	// BillingCycleAnchor controls when the new billing cycle starts after a plan change.
+	// Values:
+	// - "now": Reset billing cycle immediately. New period starts from the change time.
+	// - "unchanged": Keep current billing cycle anchor. Change takes effect at next period end.
+	//
+	// Default behavior (when not specified):
+	// - Upgrades: "now" (billing cycle resets to start fresh)
+	// - Downgrades: Always treated as "unchanged" (this parameter is IGNORED for downgrades)
+	//
+	// Combined with proration_behavior, this determines upgrade behavior:
+	// - Immediate upgrade: proration_behavior=always_invoice + billing_cycle_anchor=now
+	// - Deferred upgrade: proration_behavior=create_prorations + billing_cycle_anchor=unchanged
+	//
+	// NOTE: For downgrades, billing_cycle_anchor is always treated as "unchanged" regardless of the value provided.
+	// Downgrades always take effect at the current period end.
 	BillingCycleAnchor *string `json:"billing_cycle_anchor,omitempty"`
-	// ProrationDate is the Unix timestamp for custom proration calculation (backdating)
+	// ProrationDate is a Unix timestamp (seconds) for custom proration calculation (backdating).
+	// When provided, proration credits are calculated as if the plan change happened at this time instead of now.
+	//
+	// How it works:
+	// - The remaining time on the old plan is calculated from proration_date to current_period_end
+	// - Credit = (old_plan_price) × (remaining_time / total_period_time)
+	// - This allows backdating: if a customer requested a change yesterday, you can use yesterday's timestamp
+	//
+	// Constraints:
+	// - Must be within the current billing period (between current_period_start and current_period_end)
+	// - If not specified, current time (now) is used for calculation
+	//
+	// Example: If period is Dec 1-31 and proration_date is Dec 15, customer gets credit for 16 remaining days.
 	ProrationDate *int64 `json:"proration_date,omitempty"`
 	// Metadata is a set of key-value pairs for storing additional information (ignored in preview)
 	Metadata map[string]interface{} `json:"metadata,omitempty"`

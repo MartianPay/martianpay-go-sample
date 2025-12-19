@@ -97,6 +97,25 @@ func (c *Client) DeleteCustomer(customerID string) error {
 	return nil
 }
 
+// GenerateEphemeralToken creates a short-lived token for customer authentication in checkout flows.
+// Ephemeral tokens allow social media integrations and third-party systems to authenticate customers
+// without exposing long-lived credentials.
+//
+// Parameters:
+//   - req: Request containing identity provider info (idp_key, idp_subject), provider, return URL, etc.
+//
+// Returns:
+//   - *developer.EphemeralTokenResponse: The ephemeral token with expiration time
+//   - error: nil on success, error on failure
+func (c *Client) GenerateEphemeralToken(req *developer.EphemeralTokenRequest) (*developer.EphemeralTokenResponse, error) {
+	var response developer.EphemeralTokenResponse
+	err := c.sendRequest("POST", "/v1/customers/ephemeral_token", req, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
 // ListCustomerPaymentMethods retrieves all saved payment methods for a specific customer.
 // Includes credit cards, bank accounts, and other payment instruments on file.
 //
