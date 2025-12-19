@@ -372,35 +372,43 @@ type UpdateSubscriptionPlanRequest struct {
 	// ProrationBehavior controls how proration charges are handled during plan changes.
 	// Values:
 	// - "always_invoice": Create an invoice immediately for the prorated amount. Customer is charged right away.
-	// - "create_prorations": Create proration line items but defer to the next billing cycle (no immediate charge).
-	// - "none": No proration calculation. Customer keeps access until period end, new plan starts next cycle.
+	// - "create_prorations": Defer the plan change to next billing cycle (used for deferred upgrades).
+	// - "none": No proration calculation. Only valid for downgrades.
 	//
 	// Default behavior (when not specified):
 	// - Upgrades: "always_invoice" (immediate charge with credit for unused time on old plan)
 	// - Downgrades: "none" (no charge, change takes effect at period end)
 	//
-	// Scenario Examples:
-	// | Scenario          | proration_behavior | billing_cycle_anchor | Immediate Charge | Credit | Billing Date Changes |
-	// |-------------------|-------------------|---------------------|------------------|--------|---------------------|
-	// | Immediate Upgrade | always_invoice    | now                 | Yes              | Yes    | Yes (reset to now)  |
-	// | Deferred Upgrade  | create_prorations | unchanged           | No               | Yes    | No (keeps date)     |
-	// | Downgrade         | none              | (ignored)           | No               | No     | No (period end)     |
+	// VALID COMBINATIONS (other combinations return error "invalid_proration_config"):
+	//
+	// For UPGRADES (3 valid combinations):
+	// | proration_behavior | billing_cycle_anchor | Result                                          |
+	// |-------------------|---------------------|--------------------------------------------------|
+	// | always_invoice    | now                 | Immediate upgrade, charge now, reset cycle       |
+	// | always_invoice    | unchanged           | Immediate upgrade, charge now, keep cycle        |
+	// | create_prorations | unchanged           | Deferred upgrade, change at period end           |
+	//
+	// For DOWNGRADES (1 valid combination):
+	// | proration_behavior | billing_cycle_anchor | Result                                          |
+	// |-------------------|---------------------|--------------------------------------------------|
+	// | none              | unchanged           | Deferred downgrade, change at period end         |
+	//
+	// INVALID COMBINATIONS (return error):
+	// - create_prorations + now: Would reset cycle without settling, customer credit lost
+	// - none + now/unchanged (upgrade): Would give customer free upgrade
+	// - any + now (downgrade): Downgrade cannot take effect immediately
 	ProrationBehavior *string `json:"proration_behavior,omitempty"`
 	// BillingCycleAnchor controls when the new billing cycle starts after a plan change.
 	// Values:
 	// - "now": Reset billing cycle immediately. New period starts from the change time.
-	// - "unchanged": Keep current billing cycle anchor. Change takes effect at next period end.
+	// - "unchanged": Keep current billing cycle anchor.
 	//
 	// Default behavior (when not specified):
 	// - Upgrades: "now" (billing cycle resets to start fresh)
-	// - Downgrades: Always treated as "unchanged" (this parameter is IGNORED for downgrades)
+	// - Downgrades: Must be "unchanged" (downgrades always take effect at period end)
 	//
-	// Combined with proration_behavior, this determines upgrade behavior:
-	// - Immediate upgrade: proration_behavior=always_invoice + billing_cycle_anchor=now
-	// - Deferred upgrade: proration_behavior=create_prorations + billing_cycle_anchor=unchanged
-	//
-	// NOTE: For downgrades, billing_cycle_anchor is always treated as "unchanged" regardless of the value provided.
-	// Downgrades always take effect at the current period end.
+	// NOTE: For downgrades, only "unchanged" is valid. Using "now" will return an error.
+	// See proration_behavior documentation for valid combinations.
 	BillingCycleAnchor *string `json:"billing_cycle_anchor,omitempty"`
 	// ProrationDate is a Unix timestamp (seconds) for custom proration calculation (backdating).
 	// When provided, proration credits are calculated as if the plan change happened at this time instead of now.
