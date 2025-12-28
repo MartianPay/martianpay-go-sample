@@ -109,7 +109,7 @@ func (c *Client) DeleteCustomer(customerID string) error {
 //   - error: nil on success, error on failure
 func (c *Client) GenerateEphemeralToken(req *developer.EphemeralTokenRequest) (*developer.EphemeralTokenResponse, error) {
 	var response developer.EphemeralTokenResponse
-	err := c.sendRequest("POST", "/v1/customers/ephemeral_token", req, &response)
+	err := c.sendRequest("POST", "/v1/customers/ephemeral_tokens", req, &response)
 	if err != nil {
 		return nil, err
 	}
