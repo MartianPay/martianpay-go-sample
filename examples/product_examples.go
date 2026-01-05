@@ -430,7 +430,7 @@ func getProduct(client *martianpay.Client) {
 		id = "prod_example_id"
 	}
 
-	response, err := client.GetProduct(id)
+	response, err := client.GetProduct(id, nil)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return
@@ -500,7 +500,7 @@ func updateProduct(client *martianpay.Client) {
 	}
 
 	// First get the current product
-	current, err := client.GetProduct(id)
+	current, err := client.GetProduct(id, nil)
 	if err != nil {
 		fmt.Printf("✗ API Error: %v\n", err)
 		return

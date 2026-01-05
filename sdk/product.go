@@ -49,14 +49,15 @@ func (c *Client) CreateProduct(params *developer.ProductCreateRequest) (*develop
 //
 // Parameters:
 //   - productID: The unique identifier of the product
+//   - params: Optional query parameters (use nil for defaults, or set Expand="selling_plans" to include selling plan details)
 //
 // Returns:
 //   - *developer.Product: Complete product details
 //   - error: nil on success, error on failure (e.g., product not found)
-func (c *Client) GetProduct(productID string) (*developer.Product, error) {
+func (c *Client) GetProduct(productID string, params *developer.ProductGetRequest) (*developer.Product, error) {
 	path := fmt.Sprintf("/v1/products/%s", productID)
 	var resp developer.Product
-	err := c.sendRequest("GET", path, nil, &resp)
+	err := c.sendRequestWithQuery("GET", path, params, &resp)
 	if err != nil {
 		return nil, err
 	}

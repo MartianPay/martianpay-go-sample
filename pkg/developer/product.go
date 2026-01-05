@@ -141,6 +141,12 @@ type ProductPublishRequest struct {
 // ProductDeleteRequest deletes a product (no fields needed)
 type ProductDeleteRequest struct{}
 
+// ProductGetRequest retrieves a product with optional expand
+type ProductGetRequest struct {
+	// Expand specifies related resources to include (e.g., "selling_plans")
+	Expand string `json:"expand" form:"expand"`
+}
+
 // ProductListRequest lists products with filters
 type ProductListRequest struct {
 	Page     int32 `json:"page" binding:"min=0" form:"page"`
