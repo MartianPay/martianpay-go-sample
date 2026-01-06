@@ -159,3 +159,23 @@ func (c *Client) PreviewSubscriptionUpdate(subscriptionID string, params *develo
 	}
 	return &resp, nil
 }
+
+// RevokeCancelSubscription revokes a pending cancellation for a subscription.
+// This is used when a subscription was previously scheduled to cancel (cancel_at_period_end=true)
+// but the customer or merchant wants to continue the subscription.
+//
+// Parameters:
+//   - subscriptionID: The unique identifier of the subscription to revoke cancellation
+//
+// Returns:
+//   - *developer.SubscriptionDetails: Updated subscription details with cancellation revoked
+//   - error: nil on success, error on failure (e.g., subscription not pending cancellation)
+func (c *Client) RevokeCancelSubscription(subscriptionID string) (*developer.SubscriptionDetails, error) {
+	path := fmt.Sprintf("/v1/subscriptions/%s/revoke-cancel", subscriptionID)
+	var resp developer.SubscriptionDetails
+	err := c.sendRequest("POST", path, nil, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
