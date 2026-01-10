@@ -454,6 +454,37 @@ func cancelSubscriptionImmediately(client *martianpay.Client) {
 	fmt.Printf("\n  Note: Customer access has been revoked\n")
 }
 
+// revokeCancelSubscription revokes a pending cancellation for a subscription
+func revokeCancelSubscription(client *martianpay.Client) {
+	fmt.Println("Revoking Subscription Cancellation...")
+	fmt.Print("Enter Subscription ID: ")
+
+	var id string
+	fmt.Scanln(&id)
+	if id == "" {
+		fmt.Println("✗ Subscription ID is required")
+		return
+	}
+
+	response, err := client.RevokeCancelSubscription(id)
+	if err != nil {
+		fmt.Printf("✗ API Error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\n✓ Subscription Cancellation Revoked:\n")
+	fmt.Printf("  ID: %s\n", response.ID)
+	fmt.Printf("  Status: %s\n", response.Status)
+	fmt.Printf("  Cancel at Period End: %v\n", response.CancelAtPeriodEnd)
+	fmt.Printf("  Current Period: %s - %s\n",
+		formatTimestamp(response.CurrentPeriodStart),
+		formatTimestamp(response.CurrentPeriodEnd))
+	if response.NextChargeAmount != nil {
+		fmt.Printf("  Next Charge: %s\n", *response.NextChargeAmountDisplay)
+	}
+	fmt.Printf("\n  Note: Subscription will continue billing normally\n")
+}
+
 // pauseSubscription pauses a subscription indefinitely
 func pauseSubscription(client *martianpay.Client) {
 	fmt.Println("Pausing Subscription...")

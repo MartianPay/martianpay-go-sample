@@ -256,6 +256,7 @@ func handleCategory(category int, scanner *bufio.Scanner) {
 				"Get Subscription",
 				"Cancel Subscription at Period End",
 				"Cancel Subscription Immediately",
+				"Revoke Subscription Cancellation",
 				"Pause Subscription",
 				"Pause Subscription with Auto-Resume",
 				"Resume Subscription",
@@ -511,16 +512,18 @@ func runExample(choice int) {
 	case 79:
 		cancelSubscriptionImmediately(client)
 	case 80:
-		pauseSubscription(client)
+		revokeCancelSubscription(client)
 	case 81:
-		pauseSubscriptionWithAutoResume(client)
+		pauseSubscription(client)
 	case 82:
-		resumeSubscription(client)
+		pauseSubscriptionWithAutoResume(client)
 	case 83:
-		updateSubscription(client)
+		resumeSubscription(client)
 	case 84:
-		previewSubscriptionUpdate(client)
+		updateSubscription(client)
 	case 85:
+		previewSubscriptionUpdate(client)
+	case 86:
 		startWebhookServer()
 	default:
 		fmt.Println("Invalid choice")
