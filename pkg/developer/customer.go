@@ -66,6 +66,9 @@ type Customer struct {
 
 	// Phone is the customer's phone number
 	Phone *string `json:"phone,omitempty" example:"+1234567890"`
+
+	// MerchantUUID is the merchant-provided UUID for this customer (when using uuid as idp_key)
+	MerchantUUID *string `json:"merchant_uuid,omitempty" example:"my-user-12345"`
 }
 
 // GenerateCustomerID generates a new unique customer identifier with the 'cus_' prefix
@@ -231,6 +234,10 @@ type CustomerListRequest struct {
 	Pagination
 	// Email is the filter by email
 	Email *string `json:"email" form:"email"`
+	// Phone is the filter by phone number (fuzzy match)
+	Phone *string `json:"phone" form:"phone"`
+	// MerchantUUID is the filter by merchant-provided UUID
+	MerchantUUID *string `json:"merchant_uuid" form:"merchant_uuid"`
 }
 
 // EphemeralTokenRequest contains parameters for issuing ephemeral tokens
@@ -238,20 +245,20 @@ type EphemeralTokenRequest struct {
 	// IDPKey is the identity provider type - determines how to identify the customer
 	// Valid values: "email", "phone", "uuid"
 	// Example: "email" means the customer is identified by their email address
-	// Optional: If not provided, creates an anonymous ephemeral token (only order_id based)
-	IDPKey string `json:"idp_key,omitempty" example:"email"`
+	// Required
+	IDPKey string `json:"idp_key" example:"email"`
 
 	// IDPSubject is the unique identifier under the specified IDP
 	// When idp_key="email", this should be the email address (e.g., "user@example.com")
 	// When idp_key="phone", this should be the phone number (e.g., "+1234567890")
-	// When idp_key="uuid", this should be a UUID
-	// Optional: If not provided along with idp_key, creates an anonymous ephemeral token
-	IDPSubject string `json:"idp_subject,omitempty" example:"user@example.com"`
+	// When idp_key="uuid", this can be any merchant-defined identifier
+	// Required
+	IDPSubject string `json:"idp_subject" example:"user@example.com"`
 
 	// Provider identifies the channel or platform initiating the request
 	// Examples: "instagram", "whatsapp", "wechat", "telegram"
 	// Used for tracking and channel-specific business logic
-	// Optional: If not provided, creates an anonymous ephemeral token
+	// Optional
 	Provider string `json:"provider,omitempty" example:"instagram"`
 
 	// AllowCreate determines whether to create a new customer if not found (default: true)
