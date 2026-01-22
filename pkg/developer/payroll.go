@@ -395,6 +395,8 @@ type PayrollItems struct {
 	AmlInfo string `json:"aml_info"`
 	// TxId is the transaction ID (Binance order ID or blockchain tx hash)
 	TxId string `json:"tx_id"`
+	// FailReason is the reason for failure if the item failed
+	FailReason string `json:"fail_reason,omitempty"`
 }
 
 // PayrollSwapItems represents a swap item for a payroll
