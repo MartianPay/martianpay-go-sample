@@ -235,6 +235,10 @@ type PayoutSwapItem struct {
 	NetworkFee string `json:"network_fee"`
 	// ToAssetId is the destination asset ID for the swap
 	ToAssetId string `json:"to_asset_id"`
+	// ToAddress is the destination address for Binance swap (funds sent directly here)
+	ToAddress string `json:"to_address,omitempty"`
+	// TxFee is the service fee for the swap transaction
+	TxFee string `json:"tx_fee,omitempty"`
 	// ExpectedToAmount is the expected amount to receive
 	ExpectedToAmount string `json:"expected_to_amount"`
 	// EstimatedToAmount is the estimated amount to be received
