@@ -181,10 +181,6 @@ type Withdraw struct {
 	TxFee decimal.Decimal `json:"tx_fee"`
 	// NetworkFee is the network fee for processing the withdrawal
 	NetworkFee decimal.Decimal `json:"network_fee"`
-	// EstimatedReceiveAmount is the estimated amount to be received after fees
-	EstimatedReceiveAmount decimal.Decimal `json:"estimated_receive_amount"`
-	// EstimatedReceiveAmountMin is the minimum guaranteed receive amount
-	EstimatedReceiveAmountMin decimal.Decimal `json:"estimated_receive_amount_min"`
 	// Status is the current status of the withdrawal
 	Status string `json:"status"`
 	// SubStatus is the sub status (e.g. "pending_approval")
