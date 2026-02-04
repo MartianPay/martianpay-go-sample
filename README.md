@@ -53,6 +53,25 @@ The examples demonstrate the **API-only integration approach** to show all SDK m
 
 📁 **See [examples/README.md](examples/README.md) for full details**
 
+## Environment Configuration
+
+The SDK supports both production and development environments:
+
+| Environment | Base URL |
+|-------------|----------|
+| Production (default) | `https://api.martianpay.com` |
+| Development | `https://dev.martianpay.com` |
+
+To use the development environment, set the `BaseURL` after creating the client:
+
+```go
+// Create client with default production URL
+client := martianpay.NewClient(apiKey)
+
+// Switch to development environment
+client.BaseURL = "https://dev.martianpay.com"
+```
+
 ## Quick Start
 
 Here's a simple example of using the SDK to list customers:
