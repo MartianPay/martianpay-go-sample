@@ -194,6 +194,8 @@ type SubscriptionDetails struct {
 	ProductID *string `json:"product_id,omitempty"`
 	// VariantID is the ID of the subscribed product variant
 	VariantID *string `json:"variant_id,omitempty"`
+	// Quantity is the number of units subscribed
+	Quantity int `json:"quantity"`
 	// Status is the current subscription status (incomplete, active, paused, past_due, canceled)
 	Status string `json:"status"`
 	// CollectionMethod defines how payment is collected (charge_automatically or send_invoice)
@@ -314,6 +316,8 @@ type SubscriptionPendingUpdate struct {
 	TargetSellingPlanName *string `json:"target_selling_plan_name,omitempty"`
 	// TargetVariantID is the variant to change to (optional)
 	TargetVariantID *string `json:"target_variant_id,omitempty"`
+	// TargetQuantity is the quantity to change to (optional)
+	TargetQuantity *int `json:"target_quantity,omitempty"`
 	// TargetVariantTitle is the display title of the target variant
 	TargetVariantTitle *string `json:"target_variant_title,omitempty"`
 	// TargetVariantPrice is the base price of the target variant (formatted)
